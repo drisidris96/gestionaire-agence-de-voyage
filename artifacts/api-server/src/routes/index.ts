@@ -12,6 +12,9 @@ import settingsRouter from "./settings";
 import employeesRouter from "./employees";
 import payrollRouter from "./payroll";
 import purchaseOrdersRouter from "./purchase-orders";
+import suppliersRouter from "./suppliers";
+import groupsRouter from "./groups";
+import remindersRouter from "./reminders";
 
 const router: IRouter = Router();
 
@@ -28,5 +31,8 @@ router.use(settingsRouter);
 router.use(employeesRouter);
 router.use(payrollRouter);
 router.use(purchaseOrdersRouter);
+router.use(suppliersRouter);
+router.use(groupsRouter);
+router.use(remindersRouter);
 
 export default router;

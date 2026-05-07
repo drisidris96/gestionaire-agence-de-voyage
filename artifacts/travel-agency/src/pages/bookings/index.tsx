@@ -8,7 +8,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Plus, MoreHorizontal, Pencil, Trash2, FileText, Filter, CheckCircle, XCircle, Hotel, Plane, Building2, Loader2 } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2, FileText, Filter, CheckCircle, XCircle, Hotel, Plane, Building2, Loader2, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/export-csv";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -158,6 +159,13 @@ export default function BookingsPage() {
               <SelectItem value="cancelled">ملغى</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={() => {
+            const filtered2 = filteredBookings ?? [];
+            downloadCSV("bookings.csv",
+              ["#", "العميل", "الباقة", "تاريخ السفر", "تاريخ العودة", "الإجمالي", "الحالة"],
+              filtered2.map(b => [b.id, b.clientName, b.packageName, b.departureDate ?? "", b.returnDate ?? "", b.totalPrice, b.status])
+            );
+          }} className="gap-1.5"><Download className="h-4 w-4" /> تصدير CSV</Button>
           <Button onClick={() => setIsFormOpen(true)} data-testid="button-add-booking">
             <Plus className="ml-2 h-4 w-4" /> إضافة حجز
           </Button>

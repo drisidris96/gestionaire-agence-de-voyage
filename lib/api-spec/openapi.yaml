@@ -848,6 +848,276 @@ paths:
         "204":
           description: Deleted
 
+  # ─── Suppliers ───────────────────────────────────────────────────────────────
+  /suppliers:
+    get:
+      operationId: listSuppliers
+      tags: [suppliers]
+      summary: List all suppliers
+      responses:
+        "200":
+          description: List of suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Supplier"
+    post:
+      operationId: createSupplier
+      tags: [suppliers]
+      summary: Create supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupplierBody"
+      responses:
+        "201":
+          description: Created supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+  /suppliers/{id}:
+    patch:
+      operationId: updateSupplier
+      tags: [suppliers]
+      summary: Update supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSupplierBody"
+      responses:
+        "200":
+          description: Updated supplier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+    delete:
+      operationId: deleteSupplier
+      tags: [suppliers]
+      summary: Delete supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Booking Groups ───────────────────────────────────────────────────────────
+  /groups:
+    get:
+      operationId: listGroups
+      tags: [groups]
+      summary: List all booking groups
+      responses:
+        "200":
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingGroup"
+    post:
+      operationId: createGroup
+      tags: [groups]
+      summary: Create booking group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroupBody"
+      responses:
+        "201":
+          description: Created group
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingGroup"
+  /groups/{id}:
+    get:
+      operationId: getGroup
+      tags: [groups]
+      summary: Get group with members
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Group with members
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingGroupDetail"
+    patch:
+      operationId: updateGroup
+      tags: [groups]
+      summary: Update booking group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGroupBody"
+      responses:
+        "200":
+          description: Updated group
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingGroup"
+    delete:
+      operationId: deleteGroup
+      tags: [groups]
+      summary: Delete booking group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+  /groups/{id}/members:
+    post:
+      operationId: addGroupMember
+      tags: [groups]
+      summary: Add member to group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroupMemberBody"
+      responses:
+        "201":
+          description: Created member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupMember"
+  /groups/{id}/members/{memberId}:
+    delete:
+      operationId: removeGroupMember
+      tags: [groups]
+      summary: Remove member from group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Reminders ───────────────────────────────────────────────────────────────
+  /reminders:
+    get:
+      operationId: listReminders
+      tags: [reminders]
+      summary: List all reminders
+      responses:
+        "200":
+          description: List of reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+    post:
+      operationId: createReminder
+      tags: [reminders]
+      summary: Create reminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReminderBody"
+      responses:
+        "201":
+          description: Created reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+  /reminders/{id}:
+    patch:
+      operationId: updateReminder
+      tags: [reminders]
+      summary: Update reminder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReminderBody"
+      responses:
+        "200":
+          description: Updated reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+    delete:
+      operationId: deleteReminder
+      tags: [reminders]
+      summary: Delete reminder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
   # ─── Expenses ───────────────────────────────────────────────────────────────
   /expenses:
     get:
@@ -1716,6 +1986,249 @@ components:
           type: string
         metadata:
           $ref: '#/components/schemas/UploadUrlRequest'
+    # ─── Suppliers ───────────────────────────────────────────────────────────────
+    Supplier:
+      type: object
+      required: [id, name, type, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [hotel, airline, transport, restaurant, other]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateSupplierBody:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [hotel, airline, transport, restaurant, other]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+
+    UpdateSupplierBody:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [hotel, airline, transport, restaurant, other]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+
+    # ─── Booking Groups ───────────────────────────────────────────────────────────
+    GroupMember:
+      type: object
+      required: [id, groupId, clientName, pricePaid, isPaid, createdAt]
+      properties:
+        id:
+          type: integer
+        groupId:
+          type: integer
+        clientName:
+          type: string
+        clientPhone:
+          type: ["string", "null"]
+        pricePaid:
+          type: number
+        isPaid:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingGroup:
+      type: object
+      required: [id, name, packageName, departureDate, maxCapacity, totalPrice, status, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        packageName:
+          type: string
+        departureDate:
+          type: string
+        returnDate:
+          type: ["string", "null"]
+        maxCapacity:
+          type: integer
+        totalPrice:
+          type: number
+        status:
+          type: string
+          enum: [open, confirmed, completed, cancelled]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingGroupDetail:
+      allOf:
+        - $ref: "#/components/schemas/BookingGroup"
+        - type: object
+          required: [members]
+          properties:
+            members:
+              type: array
+              items:
+                $ref: "#/components/schemas/GroupMember"
+
+    CreateGroupBody:
+      type: object
+      required: [name, packageName, departureDate]
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        packageName:
+          type: string
+        departureDate:
+          type: string
+        returnDate:
+          type: ["string", "null"]
+        maxCapacity:
+          type: integer
+        totalPrice:
+          type: number
+        status:
+          type: string
+          enum: [open, confirmed, completed, cancelled]
+        notes:
+          type: ["string", "null"]
+
+    UpdateGroupBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        packageName:
+          type: string
+        departureDate:
+          type: string
+        returnDate:
+          type: ["string", "null"]
+        maxCapacity:
+          type: integer
+        totalPrice:
+          type: number
+        status:
+          type: string
+          enum: [open, confirmed, completed, cancelled]
+        notes:
+          type: ["string", "null"]
+
+    CreateGroupMemberBody:
+      type: object
+      required: [clientName]
+      properties:
+        clientName:
+          type: string
+        clientPhone:
+          type: ["string", "null"]
+        pricePaid:
+          type: number
+        isPaid:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+
+    # ─── Reminders ───────────────────────────────────────────────────────────────
+    Reminder:
+      type: object
+      required: [id, title, dueDate, type, isCompleted, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        dueDate:
+          type: string
+        type:
+          type: string
+          enum: [booking, payment, general, client]
+        isCompleted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateReminderBody:
+      type: object
+      required: [title, dueDate]
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        dueDate:
+          type: string
+        type:
+          type: string
+          enum: [booking, payment, general, client]
+        isCompleted:
+          type: boolean
+
+    UpdateReminderBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        dueDate:
+          type: string
+        type:
+          type: string
+          enum: [booking, payment, general, client]
+        isCompleted:
+          type: boolean
+
     ErrorEnvelope:
       type: object
       required: [error]

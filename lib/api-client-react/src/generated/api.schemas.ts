@@ -551,6 +551,244 @@ export interface UploadUrlResponse {
   metadata?: UploadUrlRequest;
 }
 
+export type SupplierType = (typeof SupplierType)[keyof typeof SupplierType];
+
+export const SupplierType = {
+  hotel: "hotel",
+  airline: "airline",
+  transport: "transport",
+  restaurant: "restaurant",
+  other: "other",
+} as const;
+
+export interface Supplier {
+  id: number;
+  name: string;
+  type: SupplierType;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export type CreateSupplierBodyType =
+  (typeof CreateSupplierBodyType)[keyof typeof CreateSupplierBodyType];
+
+export const CreateSupplierBodyType = {
+  hotel: "hotel",
+  airline: "airline",
+  transport: "transport",
+  restaurant: "restaurant",
+  other: "other",
+} as const;
+
+export interface CreateSupplierBody {
+  name: string;
+  type: CreateSupplierBodyType;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  isActive?: boolean;
+}
+
+export type UpdateSupplierBodyType =
+  (typeof UpdateSupplierBodyType)[keyof typeof UpdateSupplierBodyType];
+
+export const UpdateSupplierBodyType = {
+  hotel: "hotel",
+  airline: "airline",
+  transport: "transport",
+  restaurant: "restaurant",
+  other: "other",
+} as const;
+
+export interface UpdateSupplierBody {
+  name?: string;
+  type?: UpdateSupplierBodyType;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  isActive?: boolean;
+}
+
+export interface GroupMember {
+  id: number;
+  groupId: number;
+  clientName: string;
+  /** @nullable */
+  clientPhone?: string | null;
+  pricePaid: number;
+  isPaid: boolean;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export type BookingGroupStatus =
+  (typeof BookingGroupStatus)[keyof typeof BookingGroupStatus];
+
+export const BookingGroupStatus = {
+  open: "open",
+  confirmed: "confirmed",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export interface BookingGroup {
+  id: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  packageName: string;
+  departureDate: string;
+  /** @nullable */
+  returnDate?: string | null;
+  maxCapacity: number;
+  totalPrice: number;
+  status: BookingGroupStatus;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export type BookingGroupDetail = BookingGroup & {
+  members: GroupMember[];
+};
+
+export type CreateGroupBodyStatus =
+  (typeof CreateGroupBodyStatus)[keyof typeof CreateGroupBodyStatus];
+
+export const CreateGroupBodyStatus = {
+  open: "open",
+  confirmed: "confirmed",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export interface CreateGroupBody {
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  packageName: string;
+  departureDate: string;
+  /** @nullable */
+  returnDate?: string | null;
+  maxCapacity?: number;
+  totalPrice?: number;
+  status?: CreateGroupBodyStatus;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type UpdateGroupBodyStatus =
+  (typeof UpdateGroupBodyStatus)[keyof typeof UpdateGroupBodyStatus];
+
+export const UpdateGroupBodyStatus = {
+  open: "open",
+  confirmed: "confirmed",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export interface UpdateGroupBody {
+  name?: string;
+  /** @nullable */
+  description?: string | null;
+  packageName?: string;
+  departureDate?: string;
+  /** @nullable */
+  returnDate?: string | null;
+  maxCapacity?: number;
+  totalPrice?: number;
+  status?: UpdateGroupBodyStatus;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface CreateGroupMemberBody {
+  clientName: string;
+  /** @nullable */
+  clientPhone?: string | null;
+  pricePaid?: number;
+  isPaid?: boolean;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type ReminderType = (typeof ReminderType)[keyof typeof ReminderType];
+
+export const ReminderType = {
+  booking: "booking",
+  payment: "payment",
+  general: "general",
+  client: "client",
+} as const;
+
+export interface Reminder {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  dueDate: string;
+  type: ReminderType;
+  isCompleted: boolean;
+  createdAt: string;
+}
+
+export type CreateReminderBodyType =
+  (typeof CreateReminderBodyType)[keyof typeof CreateReminderBodyType];
+
+export const CreateReminderBodyType = {
+  booking: "booking",
+  payment: "payment",
+  general: "general",
+  client: "client",
+} as const;
+
+export interface CreateReminderBody {
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  dueDate: string;
+  type?: CreateReminderBodyType;
+  isCompleted?: boolean;
+}
+
+export type UpdateReminderBodyType =
+  (typeof UpdateReminderBodyType)[keyof typeof UpdateReminderBodyType];
+
+export const UpdateReminderBodyType = {
+  booking: "booking",
+  payment: "payment",
+  general: "general",
+  client: "client",
+} as const;
+
+export interface UpdateReminderBody {
+  title?: string;
+  /** @nullable */
+  description?: string | null;
+  dueDate?: string;
+  type?: UpdateReminderBodyType;
+  isCompleted?: boolean;
+}
+
 export interface ErrorEnvelope {
   error: string;
 }

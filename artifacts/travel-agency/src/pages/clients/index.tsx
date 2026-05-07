@@ -5,7 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Plus, Search, MoreHorizontal, Pencil, Trash, FileText } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, Trash, FileText, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/export-csv";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -122,6 +123,13 @@ export default function ClientsPage() {
               data-testid="input-search-clients"
             />
           </div>
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = filteredClients ?? [];
+            downloadCSV("clients.csv",
+              ["#", "الاسم", "الهاتف", "البريد الإلكتروني", "الجنسية", "تاريخ الإضافة"],
+              rows.map(c => [c.id, c.name, c.phone ?? "", c.email ?? "", c.nationality ?? "", c.createdAt])
+            );
+          }} className="gap-1.5 shrink-0"><Download className="h-4 w-4" /> CSV</Button>
 
           <Dialog open={isAddOpen} onOpenChange={(open) => {
             setIsAddOpen(open);

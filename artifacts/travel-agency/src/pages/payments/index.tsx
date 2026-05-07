@@ -3,8 +3,10 @@ import { Link } from "wouter";
 import { useListPayments } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { CreditCard, Search } from "lucide-react";
+import { CreditCard, Search, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/export-csv";
 
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -29,15 +31,23 @@ export default function PaymentsPage() {
           <p className="text-muted-foreground mt-1">عرض جميع المعاملات المالية.</p>
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="ابحث باسم العميل أو رقم الحجز..."
-            className="pr-8"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            data-testid="input-search-payments"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="ابحث باسم العميل أو رقم الحجز..."
+              className="pr-8"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              data-testid="input-search-payments"
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={() => {
+            downloadCSV("payments.csv",
+              ["#", "التاريخ", "العميل", "رقم الحجز", "المبلغ", "طريقة الدفع", "ملاحظات"],
+              (filteredPayments ?? []).map(p => [p.id, p.date, p.clientName ?? "", p.bookingId, p.amount, p.method, p.notes ?? ""])
+            );
+          }} className="gap-1.5 shrink-0"><Download className="h-4 w-4" /> CSV</Button>
         </div>
       </div>
 

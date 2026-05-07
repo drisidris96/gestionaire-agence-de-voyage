@@ -21,6 +21,11 @@ import FinancePage from "@/pages/finance/index";
 import SettingsPage from "@/pages/settings/index";
 import EmployeesPage from "@/pages/employees/index";
 import PurchaseOrdersPage from "@/pages/purchase-orders/index";
+import SuppliersPage from "@/pages/suppliers/index";
+import GroupsPage from "@/pages/groups/index";
+import RemindersPage from "@/pages/reminders/index";
+import CalendarPage from "@/pages/calendar/index";
+import MessagesPage from "@/pages/messages/index";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +59,11 @@ function ProtectedRouter() {
         <Route path="/settings" component={SettingsPage} />
         <Route path="/employees" component={EmployeesPage} />
         <Route path="/purchase-orders" component={PurchaseOrdersPage} />
+        <Route path="/suppliers" component={SuppliersPage} />
+        <Route path="/groups" component={GroupsPage} />
+        <Route path="/reminders" component={RemindersPage} />
+        <Route path="/calendar" component={CalendarPage} />
+        <Route path="/messages" component={MessagesPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

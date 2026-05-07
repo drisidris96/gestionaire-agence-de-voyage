@@ -837,6 +837,264 @@ export const DeletePurchaseOrderParams = zod.object({
 });
 
 /**
+ * @summary List all suppliers
+ */
+export const ListSuppliersResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  type: zod.enum(["hotel", "airline", "transport", "restaurant", "other"]),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const ListSuppliersResponse = zod.array(ListSuppliersResponseItem);
+
+/**
+ * @summary Create supplier
+ */
+export const CreateSupplierBody = zod.object({
+  name: zod.string(),
+  type: zod.enum(["hotel", "airline", "transport", "restaurant", "other"]),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update supplier
+ */
+export const UpdateSupplierParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateSupplierBody = zod.object({
+  name: zod.string().optional(),
+  type: zod
+    .enum(["hotel", "airline", "transport", "restaurant", "other"])
+    .optional(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateSupplierResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  type: zod.enum(["hotel", "airline", "transport", "restaurant", "other"]),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete supplier
+ */
+export const DeleteSupplierParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all booking groups
+ */
+export const ListGroupsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  packageName: zod.string(),
+  departureDate: zod.string(),
+  returnDate: zod.string().nullish(),
+  maxCapacity: zod.number(),
+  totalPrice: zod.number(),
+  status: zod.enum(["open", "confirmed", "completed", "cancelled"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListGroupsResponse = zod.array(ListGroupsResponseItem);
+
+/**
+ * @summary Create booking group
+ */
+export const CreateGroupBody = zod.object({
+  name: zod.string(),
+  description: zod.string().nullish(),
+  packageName: zod.string(),
+  departureDate: zod.string(),
+  returnDate: zod.string().nullish(),
+  maxCapacity: zod.number().optional(),
+  totalPrice: zod.number().optional(),
+  status: zod.enum(["open", "confirmed", "completed", "cancelled"]).optional(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Get group with members
+ */
+export const GetGroupParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetGroupResponse = zod
+  .object({
+    id: zod.number(),
+    name: zod.string(),
+    description: zod.string().nullish(),
+    packageName: zod.string(),
+    departureDate: zod.string(),
+    returnDate: zod.string().nullish(),
+    maxCapacity: zod.number(),
+    totalPrice: zod.number(),
+    status: zod.enum(["open", "confirmed", "completed", "cancelled"]),
+    notes: zod.string().nullish(),
+    createdAt: zod.coerce.date(),
+  })
+  .and(
+    zod.object({
+      members: zod.array(
+        zod.object({
+          id: zod.number(),
+          groupId: zod.number(),
+          clientName: zod.string(),
+          clientPhone: zod.string().nullish(),
+          pricePaid: zod.number(),
+          isPaid: zod.boolean(),
+          notes: zod.string().nullish(),
+          createdAt: zod.coerce.date(),
+        }),
+      ),
+    }),
+  );
+
+/**
+ * @summary Update booking group
+ */
+export const UpdateGroupParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateGroupBody = zod.object({
+  name: zod.string().optional(),
+  description: zod.string().nullish(),
+  packageName: zod.string().optional(),
+  departureDate: zod.string().optional(),
+  returnDate: zod.string().nullish(),
+  maxCapacity: zod.number().optional(),
+  totalPrice: zod.number().optional(),
+  status: zod.enum(["open", "confirmed", "completed", "cancelled"]).optional(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateGroupResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  packageName: zod.string(),
+  departureDate: zod.string(),
+  returnDate: zod.string().nullish(),
+  maxCapacity: zod.number(),
+  totalPrice: zod.number(),
+  status: zod.enum(["open", "confirmed", "completed", "cancelled"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete booking group
+ */
+export const DeleteGroupParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Add member to group
+ */
+export const AddGroupMemberParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AddGroupMemberBody = zod.object({
+  clientName: zod.string(),
+  clientPhone: zod.string().nullish(),
+  pricePaid: zod.number().optional(),
+  isPaid: zod.boolean().optional(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Remove member from group
+ */
+export const RemoveGroupMemberParams = zod.object({
+  id: zod.coerce.number(),
+  memberId: zod.coerce.number(),
+});
+
+/**
+ * @summary List all reminders
+ */
+export const ListRemindersResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  dueDate: zod.string(),
+  type: zod.enum(["booking", "payment", "general", "client"]),
+  isCompleted: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const ListRemindersResponse = zod.array(ListRemindersResponseItem);
+
+/**
+ * @summary Create reminder
+ */
+export const CreateReminderBody = zod.object({
+  title: zod.string(),
+  description: zod.string().nullish(),
+  dueDate: zod.string(),
+  type: zod.enum(["booking", "payment", "general", "client"]).optional(),
+  isCompleted: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update reminder
+ */
+export const UpdateReminderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateReminderBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().nullish(),
+  dueDate: zod.string().optional(),
+  type: zod.enum(["booking", "payment", "general", "client"]).optional(),
+  isCompleted: zod.boolean().optional(),
+});
+
+export const UpdateReminderResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  dueDate: zod.string(),
+  type: zod.enum(["booking", "payment", "general", "client"]),
+  isCompleted: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete reminder
+ */
+export const DeleteReminderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary List all expenses
  */
 export const ListExpensesQueryParams = zod.object({
