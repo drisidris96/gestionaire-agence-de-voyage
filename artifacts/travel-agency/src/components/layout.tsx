@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/use-auth";
 
 const navigation = [
   { name: "لوحة القيادة", href: "/", icon: LayoutDashboard },
@@ -14,6 +15,7 @@ const navigation = [
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { logout, username } = useAuth();
 
   return (
     <SidebarProvider>
@@ -32,6 +34,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           </SidebarHeader>
+
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs">القائمة الرئيسية</SidebarGroupLabel>
@@ -54,11 +57,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="border-t border-sidebar-border p-4">
+
+          <SidebarFooter className="border-t border-sidebar-border p-3">
+            <div className="flex items-center gap-2 px-2 py-2 mb-1 rounded-md" style={{ background: "rgba(201,162,39,0.08)" }}>
+              <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "hsl(43 73% 44%)", color: "#1a1200" }}>
+                {username?.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-sidebar-foreground truncate">{username}</div>
+                <div className="text-[10px] text-sidebar-foreground/50">مدير النظام</div>
+              </div>
+            </div>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <button className="w-full flex items-center gap-3 text-destructive hover:text-destructive/80">
+                  <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-3"
+                    style={{ color: "hsl(0 84% 65%)" }}
+                    data-testid="button-logout"
+                  >
                     <LogOut className="h-4 w-4" />
                     <span>تسجيل الخروج</span>
                   </button>
@@ -69,9 +87,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-14 border-b bg-sidebar flex items-center gap-3 px-4 md:hidden">
-            <img src="/logo.jpg" alt="شويعر" className="h-9 w-auto object-contain rounded" />
-            <div className="font-bold text-sidebar-primary">شويعر للسياحة والأسفار</div>
+          <header className="h-14 border-b bg-sidebar flex items-center justify-between gap-3 px-4 md:hidden">
+            <div className="flex items-center gap-3">
+              <img src="/logo.jpg" alt="شويعر" className="h-9 w-auto object-contain rounded" />
+              <div className="font-bold text-sidebar-primary text-sm">شويعر للسياحة والأسفار</div>
+            </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1 text-xs px-2 py-1 rounded"
+              style={{ color: "hsl(0 84% 65%)", background: "rgba(220,38,38,0.1)" }}
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              خروج
+            </button>
           </header>
           <div className="flex-1 overflow-auto p-4 md:p-8">
             <div className="max-w-7xl mx-auto w-full">
