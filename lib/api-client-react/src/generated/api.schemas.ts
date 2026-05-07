@@ -365,6 +365,177 @@ export interface UpdateExpenseBody {
   reference?: string | null;
 }
 
+export interface Employee {
+  id: number;
+  name: string;
+  position: string;
+  baseSalary: number;
+  /** @nullable */
+  phone?: string | null;
+  hireDate: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateEmployeeBody {
+  name: string;
+  position: string;
+  baseSalary: number;
+  /** @nullable */
+  phone?: string | null;
+  hireDate: string;
+  isActive?: boolean;
+}
+
+export interface UpdateEmployeeBody {
+  name?: string;
+  position?: string;
+  baseSalary?: number;
+  /** @nullable */
+  phone?: string | null;
+  hireDate?: string;
+  isActive?: boolean;
+}
+
+export type PayrollRecordStatus =
+  (typeof PayrollRecordStatus)[keyof typeof PayrollRecordStatus];
+
+export const PayrollRecordStatus = {
+  draft: "draft",
+  paid: "paid",
+} as const;
+
+export interface PayrollRecord {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  position: string;
+  month: number;
+  year: number;
+  baseSalary: number;
+  allowances: number;
+  deductions: number;
+  netSalary: number;
+  status: PayrollRecordStatus;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export type CreatePayrollBodyStatus =
+  (typeof CreatePayrollBodyStatus)[keyof typeof CreatePayrollBodyStatus];
+
+export const CreatePayrollBodyStatus = {
+  draft: "draft",
+  paid: "paid",
+} as const;
+
+export interface CreatePayrollBody {
+  employeeId: number;
+  month: number;
+  year: number;
+  baseSalary: number;
+  allowances?: number;
+  deductions?: number;
+  status?: CreatePayrollBodyStatus;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type UpdatePayrollBodyStatus =
+  (typeof UpdatePayrollBodyStatus)[keyof typeof UpdatePayrollBodyStatus];
+
+export const UpdatePayrollBodyStatus = {
+  draft: "draft",
+  paid: "paid",
+} as const;
+
+export interface UpdatePayrollBody {
+  baseSalary?: number;
+  allowances?: number;
+  deductions?: number;
+  status?: UpdatePayrollBodyStatus;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface PurchaseOrderItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export type PurchaseOrderStatus =
+  (typeof PurchaseOrderStatus)[keyof typeof PurchaseOrderStatus];
+
+export const PurchaseOrderStatus = {
+  pending: "pending",
+  approved: "approved",
+  delivered: "delivered",
+  cancelled: "cancelled",
+} as const;
+
+export interface PurchaseOrder {
+  id: number;
+  orderNumber: string;
+  supplierName: string;
+  /** @nullable */
+  supplierPhone?: string | null;
+  date: string;
+  items: PurchaseOrderItem[];
+  totalAmount: number;
+  status: PurchaseOrderStatus;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export type CreatePurchaseOrderBodyStatus =
+  (typeof CreatePurchaseOrderBodyStatus)[keyof typeof CreatePurchaseOrderBodyStatus];
+
+export const CreatePurchaseOrderBodyStatus = {
+  pending: "pending",
+  approved: "approved",
+  delivered: "delivered",
+  cancelled: "cancelled",
+} as const;
+
+export interface CreatePurchaseOrderBody {
+  orderNumber?: string;
+  supplierName: string;
+  /** @nullable */
+  supplierPhone?: string | null;
+  date: string;
+  items: PurchaseOrderItem[];
+  totalAmount: number;
+  status?: CreatePurchaseOrderBodyStatus;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type UpdatePurchaseOrderBodyStatus =
+  (typeof UpdatePurchaseOrderBodyStatus)[keyof typeof UpdatePurchaseOrderBodyStatus];
+
+export const UpdatePurchaseOrderBodyStatus = {
+  pending: "pending",
+  approved: "approved",
+  delivered: "delivered",
+  cancelled: "cancelled",
+} as const;
+
+export interface UpdatePurchaseOrderBody {
+  supplierName?: string;
+  /** @nullable */
+  supplierPhone?: string | null;
+  date?: string;
+  items?: PurchaseOrderItem[];
+  totalAmount?: number;
+  status?: UpdatePurchaseOrderBodyStatus;
+  /** @nullable */
+  notes?: string | null;
+}
+
 export interface UploadUrlRequest {
   /** @minLength 1 */
   name: string;
@@ -399,6 +570,12 @@ export type ListBookingsParams = {
 
 export type ListPaymentsParams = {
   bookingId?: number;
+};
+
+export type ListPayrollParams = {
+  employeeId?: number;
+  month?: number;
+  year?: number;
 };
 
 export type ListExpensesParams = {

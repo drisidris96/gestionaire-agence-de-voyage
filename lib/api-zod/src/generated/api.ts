@@ -549,6 +549,294 @@ export const UpdateSettingsResponse = zod.object({
 });
 
 /**
+ * @summary List all employees
+ */
+export const ListEmployeesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  position: zod.string(),
+  baseSalary: zod.number(),
+  phone: zod.string().nullish(),
+  hireDate: zod.string(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+export const ListEmployeesResponse = zod.array(ListEmployeesResponseItem);
+
+/**
+ * @summary Create employee
+ */
+export const CreateEmployeeBody = zod.object({
+  name: zod.string(),
+  position: zod.string(),
+  baseSalary: zod.number(),
+  phone: zod.string().nullish(),
+  hireDate: zod.string(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Get employee
+ */
+export const GetEmployeeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetEmployeeResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  position: zod.string(),
+  baseSalary: zod.number(),
+  phone: zod.string().nullish(),
+  hireDate: zod.string(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update employee
+ */
+export const UpdateEmployeeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateEmployeeBody = zod.object({
+  name: zod.string().optional(),
+  position: zod.string().optional(),
+  baseSalary: zod.number().optional(),
+  phone: zod.string().nullish(),
+  hireDate: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateEmployeeResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  position: zod.string(),
+  baseSalary: zod.number(),
+  phone: zod.string().nullish(),
+  hireDate: zod.string(),
+  isActive: zod.boolean(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete employee
+ */
+export const DeleteEmployeeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List payroll records
+ */
+export const ListPayrollQueryParams = zod.object({
+  employeeId: zod.coerce.number().optional(),
+  month: zod.coerce.number().optional(),
+  year: zod.coerce.number().optional(),
+});
+
+export const ListPayrollResponseItem = zod.object({
+  id: zod.number(),
+  employeeId: zod.number(),
+  employeeName: zod.string(),
+  position: zod.string(),
+  month: zod.number(),
+  year: zod.number(),
+  baseSalary: zod.number(),
+  allowances: zod.number(),
+  deductions: zod.number(),
+  netSalary: zod.number(),
+  status: zod.enum(["draft", "paid"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListPayrollResponse = zod.array(ListPayrollResponseItem);
+
+/**
+ * @summary Create payroll record
+ */
+export const CreatePayrollBody = zod.object({
+  employeeId: zod.number(),
+  month: zod.number(),
+  year: zod.number(),
+  baseSalary: zod.number(),
+  allowances: zod.number().optional(),
+  deductions: zod.number().optional(),
+  status: zod.enum(["draft", "paid"]).optional(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Update payroll record
+ */
+export const UpdatePayrollParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePayrollBody = zod.object({
+  baseSalary: zod.number().optional(),
+  allowances: zod.number().optional(),
+  deductions: zod.number().optional(),
+  status: zod.enum(["draft", "paid"]).optional(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdatePayrollResponse = zod.object({
+  id: zod.number(),
+  employeeId: zod.number(),
+  employeeName: zod.string(),
+  position: zod.string(),
+  month: zod.number(),
+  year: zod.number(),
+  baseSalary: zod.number(),
+  allowances: zod.number(),
+  deductions: zod.number(),
+  netSalary: zod.number(),
+  status: zod.enum(["draft", "paid"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete payroll record
+ */
+export const DeletePayrollParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all purchase orders
+ */
+export const ListPurchaseOrdersResponseItem = zod.object({
+  id: zod.number(),
+  orderNumber: zod.string(),
+  supplierName: zod.string(),
+  supplierPhone: zod.string().nullish(),
+  date: zod.string(),
+  items: zod.array(
+    zod.object({
+      description: zod.string(),
+      quantity: zod.number(),
+      unitPrice: zod.number(),
+      total: zod.number(),
+    }),
+  ),
+  totalAmount: zod.number(),
+  status: zod.enum(["pending", "approved", "delivered", "cancelled"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListPurchaseOrdersResponse = zod.array(
+  ListPurchaseOrdersResponseItem,
+);
+
+/**
+ * @summary Create purchase order
+ */
+export const CreatePurchaseOrderBody = zod.object({
+  orderNumber: zod.string().optional(),
+  supplierName: zod.string(),
+  supplierPhone: zod.string().nullish(),
+  date: zod.string(),
+  items: zod.array(
+    zod.object({
+      description: zod.string(),
+      quantity: zod.number(),
+      unitPrice: zod.number(),
+      total: zod.number(),
+    }),
+  ),
+  totalAmount: zod.number(),
+  status: zod
+    .enum(["pending", "approved", "delivered", "cancelled"])
+    .optional(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Get purchase order
+ */
+export const GetPurchaseOrderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetPurchaseOrderResponse = zod.object({
+  id: zod.number(),
+  orderNumber: zod.string(),
+  supplierName: zod.string(),
+  supplierPhone: zod.string().nullish(),
+  date: zod.string(),
+  items: zod.array(
+    zod.object({
+      description: zod.string(),
+      quantity: zod.number(),
+      unitPrice: zod.number(),
+      total: zod.number(),
+    }),
+  ),
+  totalAmount: zod.number(),
+  status: zod.enum(["pending", "approved", "delivered", "cancelled"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update purchase order
+ */
+export const UpdatePurchaseOrderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePurchaseOrderBody = zod.object({
+  supplierName: zod.string().optional(),
+  supplierPhone: zod.string().nullish(),
+  date: zod.string().optional(),
+  items: zod
+    .array(
+      zod.object({
+        description: zod.string(),
+        quantity: zod.number(),
+        unitPrice: zod.number(),
+        total: zod.number(),
+      }),
+    )
+    .optional(),
+  totalAmount: zod.number().optional(),
+  status: zod
+    .enum(["pending", "approved", "delivered", "cancelled"])
+    .optional(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdatePurchaseOrderResponse = zod.object({
+  id: zod.number(),
+  orderNumber: zod.string(),
+  supplierName: zod.string(),
+  supplierPhone: zod.string().nullish(),
+  date: zod.string(),
+  items: zod.array(
+    zod.object({
+      description: zod.string(),
+      quantity: zod.number(),
+      unitPrice: zod.number(),
+      total: zod.number(),
+    }),
+  ),
+  totalAmount: zod.number(),
+  status: zod.enum(["pending", "approved", "delivered", "cancelled"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete purchase order
+ */
+export const DeletePurchaseOrderParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary List all expenses
  */
 export const ListExpensesQueryParams = zod.object({

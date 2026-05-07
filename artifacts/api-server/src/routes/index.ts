@@ -9,6 +9,9 @@ import dashboardRouter from "./dashboard";
 import storageRouter from "./storage";
 import expensesRouter from "./expenses";
 import settingsRouter from "./settings";
+import employeesRouter from "./employees";
+import payrollRouter from "./payroll";
+import purchaseOrdersRouter from "./purchase-orders";
 
 const router: IRouter = Router();
 
@@ -22,5 +25,8 @@ router.use(dashboardRouter);
 router.use(storageRouter);
 router.use(expensesRouter);
 router.use(settingsRouter);
+router.use(employeesRouter);
+router.use(payrollRouter);
+router.use(purchaseOrdersRouter);
 
 export default router;

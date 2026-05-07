@@ -591,6 +591,263 @@ paths:
               schema:
                 $ref: "#/components/schemas/AgencySettings"
 
+  # ─── Employees ──────────────────────────────────────────────────────────────
+  /employees:
+    get:
+      operationId: listEmployees
+      tags: [employees]
+      summary: List all employees
+      responses:
+        "200":
+          description: List of employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Employee"
+    post:
+      operationId: createEmployee
+      tags: [employees]
+      summary: Create employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEmployeeBody"
+      responses:
+        "201":
+          description: Created employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+  /employees/{id}:
+    get:
+      operationId: getEmployee
+      tags: [employees]
+      summary: Get employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+    patch:
+      operationId: updateEmployee
+      tags: [employees]
+      summary: Update employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEmployeeBody"
+      responses:
+        "200":
+          description: Updated employee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+    delete:
+      operationId: deleteEmployee
+      tags: [employees]
+      summary: Delete employee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Payroll ────────────────────────────────────────────────────────────────
+  /payroll:
+    get:
+      operationId: listPayroll
+      tags: [payroll]
+      summary: List payroll records
+      parameters:
+        - name: employeeId
+          in: query
+          schema:
+            type: integer
+        - name: month
+          in: query
+          schema:
+            type: integer
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of payroll records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PayrollRecord"
+    post:
+      operationId: createPayroll
+      tags: [payroll]
+      summary: Create payroll record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePayrollBody"
+      responses:
+        "201":
+          description: Created payroll record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollRecord"
+  /payroll/{id}:
+    patch:
+      operationId: updatePayroll
+      tags: [payroll]
+      summary: Update payroll record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePayrollBody"
+      responses:
+        "200":
+          description: Updated payroll record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayrollRecord"
+    delete:
+      operationId: deletePayroll
+      tags: [payroll]
+      summary: Delete payroll record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── Purchase Orders ─────────────────────────────────────────────────────────
+  /purchase-orders:
+    get:
+      operationId: listPurchaseOrders
+      tags: [purchaseOrders]
+      summary: List all purchase orders
+      responses:
+        "200":
+          description: List of purchase orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PurchaseOrder"
+    post:
+      operationId: createPurchaseOrder
+      tags: [purchaseOrders]
+      summary: Create purchase order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePurchaseOrderBody"
+      responses:
+        "201":
+          description: Created purchase order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+  /purchase-orders/{id}:
+    get:
+      operationId: getPurchaseOrder
+      tags: [purchaseOrders]
+      summary: Get purchase order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Purchase order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+    patch:
+      operationId: updatePurchaseOrder
+      tags: [purchaseOrders]
+      summary: Update purchase order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePurchaseOrderBody"
+      responses:
+        "200":
+          description: Updated purchase order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+    delete:
+      operationId: deletePurchaseOrder
+      tags: [purchaseOrders]
+      summary: Delete purchase order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
   # ─── Expenses ───────────────────────────────────────────────────────────────
   /expenses:
     get:
@@ -1217,6 +1474,221 @@ components:
           type: string
           format: date-time
         reference:
+          type: ["string", "null"]
+
+    # ─── Employees ───────────────────────────────────────────────────────────
+    Employee:
+      type: object
+      required: [id, name, position, baseSalary, hireDate, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+        baseSalary:
+          type: number
+        phone:
+          type: ["string", "null"]
+        hireDate:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateEmployeeBody:
+      type: object
+      required: [name, position, baseSalary, hireDate]
+      properties:
+        name:
+          type: string
+        position:
+          type: string
+        baseSalary:
+          type: number
+        phone:
+          type: ["string", "null"]
+        hireDate:
+          type: string
+        isActive:
+          type: boolean
+
+    UpdateEmployeeBody:
+      type: object
+      properties:
+        name:
+          type: string
+        position:
+          type: string
+        baseSalary:
+          type: number
+        phone:
+          type: ["string", "null"]
+        hireDate:
+          type: string
+        isActive:
+          type: boolean
+
+    # ─── Payroll ─────────────────────────────────────────────────────────────
+    PayrollRecord:
+      type: object
+      required: [id, employeeId, employeeName, position, month, year, baseSalary, allowances, deductions, netSalary, status, createdAt]
+      properties:
+        id:
+          type: integer
+        employeeId:
+          type: integer
+        employeeName:
+          type: string
+        position:
+          type: string
+        month:
+          type: integer
+        year:
+          type: integer
+        baseSalary:
+          type: number
+        allowances:
+          type: number
+        deductions:
+          type: number
+        netSalary:
+          type: number
+        status:
+          type: string
+          enum: [draft, paid]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    CreatePayrollBody:
+      type: object
+      required: [employeeId, month, year, baseSalary]
+      properties:
+        employeeId:
+          type: integer
+        month:
+          type: integer
+        year:
+          type: integer
+        baseSalary:
+          type: number
+        allowances:
+          type: number
+        deductions:
+          type: number
+        status:
+          type: string
+          enum: [draft, paid]
+        notes:
+          type: ["string", "null"]
+
+    UpdatePayrollBody:
+      type: object
+      properties:
+        baseSalary:
+          type: number
+        allowances:
+          type: number
+        deductions:
+          type: number
+        status:
+          type: string
+          enum: [draft, paid]
+        notes:
+          type: ["string", "null"]
+
+    # ─── Purchase Orders ──────────────────────────────────────────────────────
+    PurchaseOrderItem:
+      type: object
+      required: [description, quantity, unitPrice, total]
+      properties:
+        description:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        total:
+          type: number
+
+    PurchaseOrder:
+      type: object
+      required: [id, orderNumber, supplierName, date, items, totalAmount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        orderNumber:
+          type: string
+        supplierName:
+          type: string
+        supplierPhone:
+          type: ["string", "null"]
+        date:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderItem"
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, delivered, cancelled]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    CreatePurchaseOrderBody:
+      type: object
+      required: [supplierName, date, items, totalAmount]
+      properties:
+        orderNumber:
+          type: string
+        supplierName:
+          type: string
+        supplierPhone:
+          type: ["string", "null"]
+        date:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderItem"
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, delivered, cancelled]
+        notes:
+          type: ["string", "null"]
+
+    UpdatePurchaseOrderBody:
+      type: object
+      properties:
+        supplierName:
+          type: string
+        supplierPhone:
+          type: ["string", "null"]
+        date:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseOrderItem"
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, delivered, cancelled]
+        notes:
           type: ["string", "null"]
 
     # ─── Storage ──────────────────────────────────────────────────────────────
