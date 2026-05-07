@@ -560,6 +560,37 @@ paths:
                 items:
                   $ref: "#/components/schemas/BookingStatusCount"
 
+  # ─── Settings ───────────────────────────────────────────────────────────────
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get agency settings
+      responses:
+        "200":
+          description: Agency settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgencySettings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update agency settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingsBody"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgencySettings"
+
   # ─── Expenses ───────────────────────────────────────────────────────────────
   /expenses:
     get:
@@ -1097,6 +1128,40 @@ components:
           type: string
         count:
           type: integer
+
+    # ─── Settings ────────────────────────────────────────────────────────────
+    AgencySettings:
+      type: object
+      required: [agencyName, agencyNameEn]
+      properties:
+        agencyName:
+          type: string
+        agencyNameEn:
+          type: string
+        agencyLogoUrl:
+          type: ["string", "null"]
+        agencyPhone:
+          type: ["string", "null"]
+        agencyEmail:
+          type: ["string", "null"]
+        agencyAddress:
+          type: ["string", "null"]
+
+    UpdateSettingsBody:
+      type: object
+      properties:
+        agencyName:
+          type: string
+        agencyNameEn:
+          type: string
+        agencyLogoUrl:
+          type: ["string", "null"]
+        agencyPhone:
+          type: ["string", "null"]
+        agencyEmail:
+          type: ["string", "null"]
+        agencyAddress:
+          type: ["string", "null"]
 
     # ─── Expense ─────────────────────────────────────────────────────────────
     Expense:
