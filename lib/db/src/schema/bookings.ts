@@ -6,6 +6,7 @@ export const bookingsTable = pgTable("bookings", {
   id: serial("id").primaryKey(),
   clientId: integer("client_id").notNull(),
   packageId: integer("package_id").notNull(),
+  bookingType: text("booking_type").notNull().default("flight"),
   travelDate: timestamp("travel_date", { withTimezone: true }).notNull(),
   returnDate: timestamp("return_date", { withTimezone: true }),
   numberOfPersons: integer("number_of_persons").notNull().default(1),

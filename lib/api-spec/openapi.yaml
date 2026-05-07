@@ -831,6 +831,9 @@ components:
           type: ["string", "null"]
         destinationName:
           type: ["string", "null"]
+        bookingType:
+          type: string
+          enum: [hotel, flight, hotel_flight]
         travelDate:
           type: string
           format: date-time
@@ -863,6 +866,9 @@ components:
           type: integer
         packageId:
           type: integer
+        bookingType:
+          type: string
+          enum: [hotel, flight, hotel_flight]
         travelDate:
           type: string
           format: date-time
@@ -886,6 +892,9 @@ components:
           type: integer
         packageId:
           type: integer
+        bookingType:
+          type: string
+          enum: [hotel, flight, hotel_flight]
         travelDate:
           type: string
           format: date-time

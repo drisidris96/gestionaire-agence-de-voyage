@@ -137,6 +137,15 @@ export interface UpdatePackageBody {
   isActive?: boolean;
 }
 
+export type BookingBookingType =
+  (typeof BookingBookingType)[keyof typeof BookingBookingType];
+
+export const BookingBookingType = {
+  hotel: "hotel",
+  flight: "flight",
+  hotel_flight: "hotel_flight",
+} as const;
+
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus];
 
 export const BookingStatus = {
@@ -156,6 +165,7 @@ export interface Booking {
   packageName?: string | null;
   /** @nullable */
   destinationName?: string | null;
+  bookingType?: BookingBookingType;
   travelDate: string;
   /** @nullable */
   returnDate?: string | null;
@@ -168,6 +178,15 @@ export interface Booking {
   createdAt: string;
   updatedAt?: string;
 }
+
+export type CreateBookingBodyBookingType =
+  (typeof CreateBookingBodyBookingType)[keyof typeof CreateBookingBodyBookingType];
+
+export const CreateBookingBodyBookingType = {
+  hotel: "hotel",
+  flight: "flight",
+  hotel_flight: "hotel_flight",
+} as const;
 
 export type CreateBookingBodyStatus =
   (typeof CreateBookingBodyStatus)[keyof typeof CreateBookingBodyStatus];
@@ -182,6 +201,7 @@ export const CreateBookingBodyStatus = {
 export interface CreateBookingBody {
   clientId: number;
   packageId: number;
+  bookingType?: CreateBookingBodyBookingType;
   travelDate: string;
   /** @nullable */
   returnDate?: string | null;
@@ -191,6 +211,15 @@ export interface CreateBookingBody {
   /** @nullable */
   notes?: string | null;
 }
+
+export type UpdateBookingBodyBookingType =
+  (typeof UpdateBookingBodyBookingType)[keyof typeof UpdateBookingBodyBookingType];
+
+export const UpdateBookingBodyBookingType = {
+  hotel: "hotel",
+  flight: "flight",
+  hotel_flight: "hotel_flight",
+} as const;
 
 export type UpdateBookingBodyStatus =
   (typeof UpdateBookingBodyStatus)[keyof typeof UpdateBookingBodyStatus];
@@ -205,6 +234,7 @@ export const UpdateBookingBodyStatus = {
 export interface UpdateBookingBody {
   clientId?: number;
   packageId?: number;
+  bookingType?: UpdateBookingBodyBookingType;
   travelDate?: string;
   /** @nullable */
   returnDate?: string | null;
