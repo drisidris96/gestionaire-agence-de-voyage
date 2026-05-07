@@ -516,6 +516,88 @@ export const GetBookingsByStatusResponse = zod.array(
 );
 
 /**
+ * @summary List all expenses
+ */
+export const ListExpensesQueryParams = zod.object({
+  category: zod.coerce.string().optional(),
+  year: zod.coerce.number().optional(),
+});
+
+export const ListExpensesResponseItem = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  description: zod.string(),
+  amount: zod.number(),
+  date: zod.coerce.date(),
+  reference: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+export const ListExpensesResponse = zod.array(ListExpensesResponseItem);
+
+/**
+ * @summary Create a new expense
+ */
+export const CreateExpenseBody = zod.object({
+  category: zod.string(),
+  description: zod.string(),
+  amount: zod.number(),
+  date: zod.coerce.date(),
+  reference: zod.string().nullish(),
+});
+
+/**
+ * @summary Get an expense by ID
+ */
+export const GetExpenseParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetExpenseResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  description: zod.string(),
+  amount: zod.number(),
+  date: zod.coerce.date(),
+  reference: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Update an expense
+ */
+export const UpdateExpenseParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateExpenseBody = zod.object({
+  category: zod.string().optional(),
+  description: zod.string().optional(),
+  amount: zod.number().optional(),
+  date: zod.coerce.date().optional(),
+  reference: zod.string().nullish(),
+});
+
+export const UpdateExpenseResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  description: zod.string(),
+  amount: zod.number(),
+  date: zod.coerce.date(),
+  reference: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Delete an expense
+ */
+export const DeleteExpenseParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary Request a presigned URL for file upload
  */
 

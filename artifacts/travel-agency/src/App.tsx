@@ -15,6 +15,8 @@ import PackagesList from "@/pages/packages/index";
 import BookingsList from "@/pages/bookings/index";
 import BookingDetail from "@/pages/bookings/detail";
 import PaymentsList from "@/pages/payments/index";
+import DocumentsPage from "@/pages/documents/index";
+import FinancePage from "@/pages/finance/index";
 import SettingsPage from "@/pages/settings/index";
 
 const queryClient = new QueryClient({
@@ -44,6 +46,8 @@ function ProtectedRouter() {
         <Route path="/bookings" component={BookingsList} />
         <Route path="/bookings/:id" component={BookingDetail} />
         <Route path="/payments" component={PaymentsList} />
+        <Route path="/documents" component={DocumentsPage} />
+        <Route path="/finance" component={FinancePage} />
         <Route path="/settings" component={SettingsPage} />
         <Route component={NotFound} />
       </Switch>

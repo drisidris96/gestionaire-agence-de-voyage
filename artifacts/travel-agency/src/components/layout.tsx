@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut, FileText, TrendingUp } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -10,6 +10,11 @@ const navigation = [
   { name: "الباقات السياحية", href: "/packages", icon: Package },
   { name: "الحجوزات", href: "/bookings", icon: BookOpenCheck },
   { name: "المدفوعات", href: "/payments", icon: CreditCard },
+];
+
+const financeNavigation = [
+  { name: "المستندات المالية", href: "/documents", icon: FileText },
+  { name: "المالية والأرباح", href: "/finance", icon: TrendingUp },
   { name: "الإعدادات", href: "/settings", icon: Settings },
 ];
 
@@ -41,6 +46,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navigation.map((item) => {
+                    const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                    return (
+                      <SidebarMenuItem key={item.name}>
+                        <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
+                          <Link href={item.href} className="flex items-center gap-3 w-full">
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs">المالية والمحاسبة</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {financeNavigation.map((item) => {
                     const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
                     return (
                       <SidebarMenuItem key={item.name}>

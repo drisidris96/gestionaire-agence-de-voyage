@@ -560,6 +560,107 @@ paths:
                 items:
                   $ref: "#/components/schemas/BookingStatusCount"
 
+  # ─── Expenses ───────────────────────────────────────────────────────────────
+  /expenses:
+    get:
+      operationId: listExpenses
+      tags: [expenses]
+      summary: List all expenses
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Create a new expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExpenseBody"
+      responses:
+        "201":
+          description: Expense created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+
+  /expenses/{id}:
+    get:
+      operationId: getExpense
+      tags: [expenses]
+      summary: Get an expense by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Expense found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateExpense
+      tags: [expenses]
+      summary: Update an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateExpenseBody"
+      responses:
+        "200":
+          description: Expense updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      summary: Delete an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Expense deleted
+
   # ─── Storage ────────────────────────────────────────────────────────────────
   /storage/uploads/request-url:
     post:
@@ -996,6 +1097,62 @@ components:
           type: string
         count:
           type: integer
+
+    # ─── Expense ─────────────────────────────────────────────────────────────
+    Expense:
+      type: object
+      required: [id, category, description, amount, date, createdAt]
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+          format: date-time
+        reference:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateExpenseBody:
+      type: object
+      required: [category, description, amount, date]
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+          format: date-time
+        reference:
+          type: ["string", "null"]
+
+    UpdateExpenseBody:
+      type: object
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+          format: date-time
+        reference:
+          type: ["string", "null"]
 
     # ─── Storage ──────────────────────────────────────────────────────────────
     UploadUrlRequest:

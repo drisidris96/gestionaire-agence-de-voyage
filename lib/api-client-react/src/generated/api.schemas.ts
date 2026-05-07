@@ -309,6 +309,36 @@ export interface BookingStatusCount {
   count: number;
 }
 
+export interface Expense {
+  id: number;
+  category: string;
+  description: string;
+  amount: number;
+  date: string;
+  /** @nullable */
+  reference?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateExpenseBody {
+  category: string;
+  description: string;
+  amount: number;
+  date: string;
+  /** @nullable */
+  reference?: string | null;
+}
+
+export interface UpdateExpenseBody {
+  category?: string;
+  description?: string;
+  amount?: number;
+  date?: string;
+  /** @nullable */
+  reference?: string | null;
+}
+
 export interface UploadUrlRequest {
   /** @minLength 1 */
   name: string;
@@ -343,4 +373,9 @@ export type ListBookingsParams = {
 
 export type ListPaymentsParams = {
   bookingId?: number;
+};
+
+export type ListExpensesParams = {
+  category?: string;
+  year?: number;
 };
