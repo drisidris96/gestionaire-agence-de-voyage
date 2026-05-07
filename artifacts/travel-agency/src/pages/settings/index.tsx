@@ -23,7 +23,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="agency-name">اسم الوكالة</Label>
-                <Input id="agency-name" defaultValue="أطلس للسياحة - Atlas Travel" data-testid="input-agency-name" />
+                <Input id="agency-name" defaultValue="شويعر للسياحة والأسفار - CHOUIAAR Travel" data-testid="input-agency-name" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-email">البريد الإلكتروني</Label>
