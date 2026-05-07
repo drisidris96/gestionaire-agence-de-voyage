@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListPayments, getListPaymentsQueryKey } from "@workspace/api-client-react";
+import { useListPayments } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { CreditCard, Filter, Search } from "lucide-react";
+import { ar } from "date-fns/locale";
+import { CreditCard, Search } from "lucide-react";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { methodAr } from "@/lib/i18n";
 
 export default function PaymentsPage() {
   const [search, setSearch] = useState("");
   const { data: payments, isLoading } = useListPayments();
 
-  // Basic client-side filtering since API doesn't support search natively on payments
-  const filteredPayments = payments?.filter(p => 
-    !search || 
+  const filteredPayments = payments?.filter(p =>
+    !search ||
     p.clientName?.toLowerCase().includes(search.toLowerCase()) ||
     p.bookingId.toString().includes(search)
   );
@@ -24,17 +25,18 @@ export default function PaymentsPage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Payments (المدفوعات)</h1>
-          <p className="text-muted-foreground mt-1">View all financial transactions.</p>
+          <h1 className="text-3xl font-bold tracking-tight">المدفوعات</h1>
+          <p className="text-muted-foreground mt-1">عرض جميع المعاملات المالية.</p>
         </div>
-        
+
         <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search by client or booking ID..." 
-            className="pl-8" 
+          <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="ابحث باسم العميل أو رقم الحجز..."
+            className="pr-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            data-testid="input-search-payments"
           />
         </div>
       </div>
@@ -43,12 +45,12 @@ export default function PaymentsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Booking Ref</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Notes</TableHead>
+              <TableHead>التاريخ</TableHead>
+              <TableHead>العميل</TableHead>
+              <TableHead>رقم الحجز</TableHead>
+              <TableHead>المبلغ</TableHead>
+              <TableHead>طريقة الدفع</TableHead>
+              <TableHead>ملاحظات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,14 +69,14 @@ export default function PaymentsPage() {
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                   <CreditCard className="h-8 w-8 mx-auto mb-3 opacity-20" />
-                  No payments found.
+                  لا توجد مدفوعات.
                 </TableCell>
               </TableRow>
             ) : (
               filteredPayments?.map((payment) => (
-                <TableRow key={payment.id} className="group">
+                <TableRow key={payment.id} className="group" data-testid={`row-payment-${payment.id}`}>
                   <TableCell>
-                    {format(new Date(payment.paymentDate), 'MMM d, yyyy')}
+                    {format(new Date(payment.paymentDate), 'd MMM yyyy', { locale: ar })}
                   </TableCell>
                   <TableCell className="font-medium">
                     {payment.clientName}
@@ -84,12 +86,12 @@ export default function PaymentsPage() {
                       #{payment.bookingId}
                     </Link>
                   </TableCell>
-                  <TableCell className="font-semibold text-chart-2">
-                    ${payment.amount.toLocaleString()}
+                  <TableCell className="font-semibold text-chart-2" data-testid={`text-amount-${payment.id}`}>
+                    {payment.amount.toLocaleString()} $
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {payment.method.replace('_', ' ')}
+                    <Badge variant="outline">
+                      {methodAr(payment.method)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">

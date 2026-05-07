@@ -4,6 +4,7 @@ import { useListClients, useCreateClient, useUpdateClient, useDeleteClient, getL
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 import { Plus, Search, MoreHorizontal, Pencil, Trash, FileText } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -19,9 +20,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 
 const clientSchema = z.object({
-  fullName: z.string().min(2, "Name is required"),
-  phone: z.string().min(5, "Phone is required"),
-  email: z.string().email("Invalid email").or(z.literal("")),
+  fullName: z.string().min(2, "الاسم مطلوب"),
+  phone: z.string().min(5, "رقم الهاتف مطلوب"),
+  email: z.string().email("البريد الإلكتروني غير صحيح").or(z.literal("")),
   address: z.string().optional(),
   passportNumber: z.string().optional(),
   nationality: z.string().optional(),
@@ -60,7 +61,7 @@ export default function ClientsPage() {
       updateClient.mutate({ id: editingClient.id, data }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          toast({ title: "Client updated successfully" });
+          toast({ title: "تم تحديث بيانات العميل بنجاح" });
           setIsAddOpen(false);
           setEditingClient(null);
         }
@@ -69,7 +70,7 @@ export default function ClientsPage() {
       createClient.mutate({ data }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          toast({ title: "Client created successfully" });
+          toast({ title: "تمت إضافة العميل بنجاح" });
           setIsAddOpen(false);
           form.reset();
         }
@@ -78,11 +79,11 @@ export default function ClientsPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this client?")) {
+    if (confirm("هل أنت متأكد من حذف هذا العميل؟")) {
       deleteClient.mutate({ id }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          toast({ title: "Client deleted" });
+          toast({ title: "تم حذف العميل" });
         }
       });
     }
@@ -106,21 +107,22 @@ export default function ClientsPage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Clients (العملاء)</h1>
-          <p className="text-muted-foreground mt-1">Manage your travel agency clients.</p>
+          <h1 className="text-3xl font-bold tracking-tight">العملاء</h1>
+          <p className="text-muted-foreground mt-1">إدارة عملاء الوكالة السياحية.</p>
         </div>
-        
+
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search clients..." 
-              className="pl-8" 
+            <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="بحث عن عميل..."
+              className="pr-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              data-testid="input-search-clients"
             />
           </div>
-          
+
           <Dialog open={isAddOpen} onOpenChange={(open) => {
             setIsAddOpen(open);
             if (!open) {
@@ -129,68 +131,68 @@ export default function ClientsPage() {
             }
           }}>
             <DialogTrigger asChild>
-              <Button><Plus className="mr-2 h-4 w-4" /> Add Client</Button>
+              <Button data-testid="button-add-client"><Plus className="ml-2 h-4 w-4" /> إضافة عميل</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>{editingClient ? "Edit Client" : "Add New Client"}</DialogTitle>
+                <DialogTitle>{editingClient ? "تعديل بيانات العميل" : "إضافة عميل جديد"}</DialogTitle>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={form.control} name="fullName" render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Full Name *</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormLabel>الاسم الكامل *</FormLabel>
+                        <FormControl><Input {...field} data-testid="input-full-name" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="phone" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone *</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormLabel>رقم الهاتف *</FormLabel>
+                        <FormControl><Input {...field} data-testid="input-phone" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="email" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl><Input {...field} type="email" /></FormControl>
+                        <FormLabel>البريد الإلكتروني</FormLabel>
+                        <FormControl><Input {...field} type="email" data-testid="input-email" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="nationality" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nationality</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormLabel>الجنسية</FormLabel>
+                        <FormControl><Input {...field} data-testid="input-nationality" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="passportNumber" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Passport Number</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormLabel>رقم جواز السفر</FormLabel>
+                        <FormControl><Input {...field} data-testid="input-passport" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="address" render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Address</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormLabel>العنوان</FormLabel>
+                        <FormControl><Input {...field} data-testid="input-address" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="notes" render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl><Textarea {...field} /></FormControl>
+                        <FormLabel>ملاحظات</FormLabel>
+                        <FormControl><Textarea {...field} data-testid="input-notes" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                   </div>
                   <DialogFooter>
-                    <Button type="submit" disabled={createClient.isPending || updateClient.isPending}>
-                      {editingClient ? "Save Changes" : "Create Client"}
+                    <Button type="submit" disabled={createClient.isPending || updateClient.isPending} data-testid="button-submit-client">
+                      {editingClient ? "حفظ التغييرات" : "إنشاء العميل"}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -204,11 +206,11 @@ export default function ClientsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Nationality</TableHead>
-              <TableHead>Passport</TableHead>
-              <TableHead>Added</TableHead>
+              <TableHead>الاسم</TableHead>
+              <TableHead>بيانات التواصل</TableHead>
+              <TableHead>الجنسية</TableHead>
+              <TableHead>جواز السفر</TableHead>
+              <TableHead>تاريخ الإضافة</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -227,12 +229,12 @@ export default function ClientsPage() {
             ) : clients?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No clients found.
+                  لا يوجد عملاء.
                 </TableCell>
               </TableRow>
             ) : (
               clients?.map((client) => (
-                <TableRow key={client.id} className="group">
+                <TableRow key={client.id} className="group" data-testid={`row-client-${client.id}`}>
                   <TableCell className="font-medium">
                     <Link href={`/clients/${client.id}`} className="hover:underline hover:text-primary">
                       {client.fullName}
@@ -245,26 +247,26 @@ export default function ClientsPage() {
                   <TableCell>{client.nationality || '-'}</TableCell>
                   <TableCell>{client.passportNumber || '-'}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {format(new Date(client.createdAt), 'MMM d, yyyy')}
+                    {format(new Date(client.createdAt), 'd MMM yyyy', { locale: ar })}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity">
+                        <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" data-testid={`menu-client-${client.id}`}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="start">
                         <DropdownMenuItem asChild>
                           <Link href={`/clients/${client.id}`} className="cursor-pointer flex items-center">
-                            <FileText className="mr-2 h-4 w-4" /> View Details
+                            <FileText className="ml-2 h-4 w-4" /> عرض التفاصيل
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openEdit(client)} className="cursor-pointer">
-                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                          <Pencil className="ml-2 h-4 w-4" /> تعديل
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(client.id)} className="text-destructive focus:text-destructive cursor-pointer">
-                          <Trash className="mr-2 h-4 w-4" /> Delete
+                          <Trash className="ml-2 h-4 w-4" /> حذف
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

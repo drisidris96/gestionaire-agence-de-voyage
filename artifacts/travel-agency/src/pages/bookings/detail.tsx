@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useParams } from "wouter";
-import { 
-  useGetBooking, 
-  useListPayments, 
-  useCreatePayment, 
+import {
+  useGetBooking,
+  useListPayments,
+  useCreatePayment,
   useUpdateBooking,
   getGetBookingQueryKey,
   getListPaymentsQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -25,16 +26,24 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "wouter";
-import { Calendar, User, CreditCard, Clock, Plane, FileText, CheckCircle2 } from "lucide-react";
+import { Calendar, User, CreditCard, Plane, FileText, CheckCircle2 } from "lucide-react";
+import { statusAr, methodAr } from "@/lib/i18n";
 
 const paymentSchema = z.object({
-  amount: z.coerce.number().min(1, "Amount is required"),
-  paymentDate: z.string().min(1, "Date is required"),
+  amount: z.coerce.number().min(1, "المبلغ مطلوب"),
+  paymentDate: z.string().min(1, "التاريخ مطلوب"),
   method: z.enum(["cash", "card", "bank_transfer", "cheque"]),
   notes: z.string().optional()
 });
 
 type PaymentFormValues = z.infer<typeof paymentSchema>;
+
+const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  pending: "secondary",
+  confirmed: "default",
+  cancelled: "destructive",
+  completed: "outline",
+};
 
 export default function BookingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -60,25 +69,19 @@ export default function BookingDetail() {
     defaultValues: {
       amount: 0,
       paymentDate: new Date().toISOString().split('T')[0],
-      method: "card",
+      method: "cash",
       notes: ""
     }
   });
 
   const handleAddPayment = (data: PaymentFormValues) => {
     createPayment.mutate({
-      data: {
-        bookingId,
-        amount: data.amount,
-        paymentDate: data.paymentDate,
-        method: data.method,
-        notes: data.notes
-      }
+      data: { bookingId, amount: data.amount, paymentDate: data.paymentDate, method: data.method, notes: data.notes }
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListPaymentsQueryKey({ bookingId }) });
         queryClient.invalidateQueries({ queryKey: getGetBookingQueryKey(bookingId) });
-        toast({ title: "Payment recorded successfully" });
+        toast({ title: "تم تسجيل الدفعة بنجاح" });
         setIsPaymentOpen(false);
         form.reset();
       }
@@ -86,13 +89,10 @@ export default function BookingDetail() {
   };
 
   const handleStatusChange = (newStatus: "pending" | "confirmed" | "cancelled" | "completed") => {
-    updateBooking.mutate({
-      id: bookingId,
-      data: { status: newStatus }
-    }, {
+    updateBooking.mutate({ id: bookingId, data: { status: newStatus } }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetBookingQueryKey(bookingId) });
-        toast({ title: `Booking marked as ${newStatus}` });
+        toast({ title: `تم تحديث حالة الحجز إلى: ${statusAr(newStatus)}` });
       }
     });
   };
@@ -107,7 +107,7 @@ export default function BookingDetail() {
     </div>;
   }
 
-  if (!booking) return <div>Booking not found</div>;
+  if (!booking) return <div className="text-center py-12 text-muted-foreground">الحجز غير موجود</div>;
 
   const remainingBalance = booking.totalPrice - (booking.paidAmount || 0);
 
@@ -116,13 +116,9 @@ export default function BookingDetail() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">Booking #{booking.id}</h1>
-            <Badge variant={
-              booking.status === 'confirmed' ? 'default' : 
-              booking.status === 'pending' ? 'secondary' : 
-              booking.status === 'cancelled' ? 'destructive' : 'outline'
-            }>
-              {booking.status}
+            <h1 className="text-3xl font-bold tracking-tight">حجز رقم #{booking.id}</h1>
+            <Badge variant={STATUS_VARIANT[booking.status] || "outline"} data-testid="status-badge">
+              {statusAr(booking.status)}
             </Badge>
           </div>
           <p className="text-muted-foreground mt-1">
@@ -131,13 +127,13 @@ export default function BookingDetail() {
             </Link> • {booking.packageName}
           </p>
         </div>
-        
+
         <div className="flex gap-2">
           {booking.status !== 'confirmed' && booking.status !== 'completed' && booking.status !== 'cancelled' && (
-            <Button onClick={() => handleStatusChange('confirmed')} variant="default">Confirm Booking</Button>
+            <Button onClick={() => handleStatusChange('confirmed')} variant="default" data-testid="button-confirm">تأكيد الحجز</Button>
           )}
           {booking.status === 'confirmed' && (
-            <Button onClick={() => handleStatusChange('completed')} variant="outline" className="text-chart-3 border-chart-3">Mark Completed</Button>
+            <Button onClick={() => handleStatusChange('completed')} variant="outline" className="text-chart-3 border-chart-3" data-testid="button-complete">تمييز كمكتمل</Button>
           )}
         </div>
       </div>
@@ -146,39 +142,39 @@ export default function BookingDetail() {
         <div className="lg:col-span-2 space-y-6">
           <Card className="border-none shadow-sm">
             <CardHeader>
-              <CardTitle>Trip Details</CardTitle>
+              <CardTitle>تفاصيل الرحلة</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
                 <div className="flex gap-3">
                   <div className="bg-primary/10 p-2 rounded-full h-fit text-primary"><Plane className="h-5 w-5" /></div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Destination</div>
+                    <div className="text-sm text-muted-foreground">الوجهة</div>
                     <div className="font-medium text-lg">{booking.destinationName}</div>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="bg-primary/10 p-2 rounded-full h-fit text-primary"><Calendar className="h-5 w-5" /></div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Travel Dates</div>
-                    <div className="font-medium">{format(new Date(booking.travelDate), 'MMM d, yyyy')}</div>
+                    <div className="text-sm text-muted-foreground">تواريخ السفر</div>
+                    <div className="font-medium">{format(new Date(booking.travelDate), 'd MMM yyyy', { locale: ar })}</div>
                     {booking.returnDate && (
-                      <div className="text-sm text-muted-foreground">Return: {format(new Date(booking.returnDate), 'MMM d, yyyy')}</div>
+                      <div className="text-sm text-muted-foreground">العودة: {format(new Date(booking.returnDate), 'd MMM yyyy', { locale: ar })}</div>
                     )}
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="bg-primary/10 p-2 rounded-full h-fit text-primary"><User className="h-5 w-5" /></div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Passengers</div>
-                    <div className="font-medium">{booking.numberOfPersons} Person(s)</div>
+                    <div className="text-sm text-muted-foreground">المسافرون</div>
+                    <div className="font-medium">{booking.numberOfPersons} مسافر</div>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="bg-primary/10 p-2 rounded-full h-fit text-primary"><FileText className="h-5 w-5" /></div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Notes</div>
-                    <div className="font-medium text-sm">{booking.notes || "None"}</div>
+                    <div className="text-sm text-muted-foreground">ملاحظات</div>
+                    <div className="font-medium text-sm">{booking.notes || "لا يوجد"}</div>
                   </div>
                 </div>
               </div>
@@ -188,43 +184,43 @@ export default function BookingDetail() {
           <Card className="border-none shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Payment History</CardTitle>
-                <CardDescription>All transactions for this booking</CardDescription>
+                <CardTitle>سجل المدفوعات</CardTitle>
+                <CardDescription>جميع الدفعات المسجلة لهذا الحجز</CardDescription>
               </div>
               <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" disabled={remainingBalance <= 0}>Add Payment</Button>
+                  <Button size="sm" disabled={remainingBalance <= 0} data-testid="button-add-payment">إضافة دفعة</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Record Payment</DialogTitle>
+                    <DialogTitle>تسجيل دفعة</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleAddPayment)} className="space-y-4">
                       <FormField control={form.control} name="amount" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Amount ($)</FormLabel>
-                          <FormControl><Input type="number" step="0.01" max={remainingBalance} {...field} /></FormControl>
+                          <FormLabel>المبلغ ($)</FormLabel>
+                          <FormControl><Input type="number" step="0.01" max={remainingBalance} {...field} data-testid="input-payment-amount" /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="paymentDate" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Date</FormLabel>
-                          <FormControl><Input type="date" {...field} /></FormControl>
+                          <FormLabel>التاريخ</FormLabel>
+                          <FormControl><Input type="date" {...field} data-testid="input-payment-date" /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="method" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Method</FormLabel>
+                          <FormLabel>طريقة الدفع</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger data-testid="select-payment-method"><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
-                              <SelectItem value="cash">Cash</SelectItem>
-                              <SelectItem value="card">Credit Card</SelectItem>
-                              <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                              <SelectItem value="cheque">Cheque</SelectItem>
+                              <SelectItem value="cash">نقدًا</SelectItem>
+                              <SelectItem value="card">بطاقة ائتمان</SelectItem>
+                              <SelectItem value="bank_transfer">تحويل بنكي</SelectItem>
+                              <SelectItem value="cheque">شيك</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -232,13 +228,13 @@ export default function BookingDetail() {
                       )} />
                       <FormField control={form.control} name="notes" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Notes / Ref Number</FormLabel>
-                          <FormControl><Textarea {...field} /></FormControl>
+                          <FormLabel>ملاحظات / رقم المرجع</FormLabel>
+                          <FormControl><Textarea {...field} data-testid="input-payment-notes" /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <DialogFooter>
-                        <Button type="submit" disabled={createPayment.isPending}>Record Payment</Button>
+                        <Button type="submit" disabled={createPayment.isPending} data-testid="button-submit-payment">تسجيل الدفعة</Button>
                       </DialogFooter>
                     </form>
                   </Form>
@@ -253,17 +249,19 @@ export default function BookingDetail() {
                 </div>
               ) : payments?.length === 0 ? (
                 <div className="text-center py-6 text-muted-foreground bg-muted/30 rounded-lg">
-                  No payments recorded yet.
+                  لم تُسجَّل أي مدفوعات بعد.
                 </div>
               ) : (
                 <div className="space-y-3">
                   {payments?.map(payment => (
-                    <div key={payment.id} className="flex justify-between items-center p-3 border rounded-md">
+                    <div key={payment.id} className="flex justify-between items-center p-3 border rounded-md" data-testid={`payment-row-${payment.id}`}>
                       <div className="flex items-center gap-3">
                         <div className="bg-primary/5 p-2 rounded-full"><CreditCard className="h-4 w-4 text-primary" /></div>
                         <div>
-                          <div className="font-medium">${payment.amount.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground">{format(new Date(payment.paymentDate), 'MMM d, yyyy')} • {payment.method.replace('_', ' ')}</div>
+                          <div className="font-medium">{payment.amount.toLocaleString()} $</div>
+                          <div className="text-xs text-muted-foreground">
+                            {format(new Date(payment.paymentDate), 'd MMM yyyy', { locale: ar })} • {methodAr(payment.method)}
+                          </div>
                         </div>
                       </div>
                       {payment.notes && <div className="text-sm text-muted-foreground max-w-[200px] truncate">{payment.notes}</div>}
@@ -278,27 +276,27 @@ export default function BookingDetail() {
         <div className="space-y-6">
           <Card className="border-none shadow-sm bg-primary text-primary-foreground">
             <CardHeader>
-              <CardTitle className="text-primary-foreground/90">Financial Summary</CardTitle>
+              <CardTitle className="text-primary-foreground/90">الملخص المالي</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center border-b border-primary-foreground/20 pb-2">
-                <span className="text-primary-foreground/80">Total Amount</span>
-                <span className="font-semibold text-lg">${booking.totalPrice.toLocaleString()}</span>
+                <span className="text-primary-foreground/80">الإجمالي</span>
+                <span className="font-semibold text-lg">{booking.totalPrice.toLocaleString()} $</span>
               </div>
               <div className="flex justify-between items-center border-b border-primary-foreground/20 pb-2">
-                <span className="text-primary-foreground/80">Amount Paid</span>
-                <span className="font-semibold">${(booking.paidAmount || 0).toLocaleString()}</span>
+                <span className="text-primary-foreground/80">المدفوع</span>
+                <span className="font-semibold">{(booking.paidAmount || 0).toLocaleString()} $</span>
               </div>
               <div className="flex justify-between items-center pt-2">
-                <span className="font-medium">Balance Due</span>
-                <span className="font-bold text-2xl">
-                  ${remainingBalance.toLocaleString()}
+                <span className="font-medium">المتبقي</span>
+                <span className="font-bold text-2xl" data-testid="text-remaining-balance">
+                  {remainingBalance.toLocaleString()} $
                 </span>
               </div>
-              
+
               {remainingBalance <= 0 && (
-                <div className="mt-4 bg-primary-foreground/20 rounded-md p-3 flex items-center justify-center gap-2 font-medium">
-                  <CheckCircle2 className="h-5 w-5" /> Fully Paid
+                <div className="mt-4 bg-primary-foreground/20 rounded-md p-3 flex items-center justify-center gap-2 font-medium" data-testid="status-fully-paid">
+                  <CheckCircle2 className="h-5 w-5" /> مدفوع بالكامل
                 </div>
               )}
             </CardContent>
