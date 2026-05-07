@@ -115,6 +115,7 @@ export const ListDestinationsResponseItem = zod.object({
   country: zod.string(),
   description: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  price: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListDestinationsResponse = zod.array(ListDestinationsResponseItem);
@@ -127,6 +128,7 @@ export const CreateDestinationBody = zod.object({
   country: zod.string(),
   description: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  price: zod.number().nullish(),
 });
 
 /**
@@ -142,6 +144,7 @@ export const GetDestinationResponse = zod.object({
   country: zod.string(),
   description: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  price: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -157,6 +160,7 @@ export const UpdateDestinationBody = zod.object({
   country: zod.string().optional(),
   description: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  price: zod.number().nullish(),
 });
 
 export const UpdateDestinationResponse = zod.object({
@@ -165,6 +169,7 @@ export const UpdateDestinationResponse = zod.object({
   country: zod.string(),
   description: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  price: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -503,3 +508,32 @@ export const GetBookingsByStatusResponseItem = zod.object({
 export const GetBookingsByStatusResponse = zod.array(
   GetBookingsByStatusResponseItem,
 );
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+
+export const RequestUploadUrlBody = zod.object({
+  name: zod.string().min(1),
+  size: zod.number().min(1),
+  contentType: zod.string().min(1),
+});
+
+export const RequestUploadUrlResponse = zod.object({
+  uploadURL: zod.string().url(),
+  objectPath: zod.string(),
+  metadata: zod
+    .object({
+      name: zod.string().min(1),
+      size: zod.number().min(1),
+      contentType: zod.string().min(1),
+    })
+    .optional(),
+});
+
+/**
+ * @summary Serve an uploaded object
+ */
+export const GetStorageObjectParams = zod.object({
+  objectPath: zod.coerce.string(),
+});

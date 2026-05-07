@@ -16,7 +16,8 @@ const router: IRouter = Router();
 
 router.get("/destinations", async (_req, res): Promise<void> => {
   const destinations = await db.select().from(destinationsTable).orderBy(destinationsTable.createdAt);
-  res.json(ListDestinationsResponse.parse(destinations));
+  const mapped = destinations.map((d) => ({ ...d, price: d.price != null ? Number(d.price) : null }));
+  res.json(ListDestinationsResponse.parse(mapped));
 });
 
 router.post("/destinations", async (req, res): Promise<void> => {
@@ -27,7 +28,7 @@ router.post("/destinations", async (req, res): Promise<void> => {
   }
 
   const [destination] = await db.insert(destinationsTable).values(parsed.data).returning();
-  res.status(201).json(GetDestinationResponse.parse(destination));
+  res.status(201).json(GetDestinationResponse.parse({ ...destination, price: destination.price != null ? Number(destination.price) : null }));
 });
 
 router.get("/destinations/:id", async (req, res): Promise<void> => {
@@ -47,7 +48,7 @@ router.get("/destinations/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetDestinationResponse.parse(destination));
+  res.json(GetDestinationResponse.parse({ ...destination, price: destination.price != null ? Number(destination.price) : null }));
 });
 
 router.patch("/destinations/:id", async (req, res): Promise<void> => {
@@ -74,7 +75,7 @@ router.patch("/destinations/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(UpdateDestinationResponse.parse(destination));
+  res.json(UpdateDestinationResponse.parse({ ...destination, price: destination.price != null ? Number(destination.price) : null }));
 });
 
 router.delete("/destinations/:id", async (req, res): Promise<void> => {

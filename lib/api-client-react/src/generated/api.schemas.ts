@@ -62,6 +62,8 @@ export interface Destination {
   description?: string | null;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  price?: number | null;
   createdAt: string;
 }
 
@@ -72,6 +74,8 @@ export interface CreateDestinationBody {
   description?: string | null;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  price?: number | null;
 }
 
 export interface UpdateDestinationBody {
@@ -81,6 +85,8 @@ export interface UpdateDestinationBody {
   description?: string | null;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  price?: number | null;
 }
 
 export interface Package {
@@ -271,6 +277,25 @@ export interface MonthlyRevenue {
 export interface BookingStatusCount {
   status: string;
   count: number;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
+}
+
+export interface ErrorEnvelope {
+  error: string;
 }
 
 export type ListClientsParams = {

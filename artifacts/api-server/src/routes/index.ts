@@ -6,6 +6,7 @@ import packagesRouter from "./packages";
 import bookingsRouter from "./bookings";
 import paymentsRouter from "./payments";
 import dashboardRouter from "./dashboard";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(packagesRouter);
 router.use(bookingsRouter);
 router.use(paymentsRouter);
 router.use(dashboardRouter);
+router.use(storageRouter);
 
 export default router;
