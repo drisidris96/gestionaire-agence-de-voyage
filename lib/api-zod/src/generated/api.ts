@@ -516,6 +516,39 @@ export const GetBookingsByStatusResponse = zod.array(
 );
 
 /**
+ * @summary Get agency settings
+ */
+export const GetSettingsResponse = zod.object({
+  agencyName: zod.string(),
+  agencyNameEn: zod.string(),
+  agencyLogoUrl: zod.string().nullish(),
+  agencyPhone: zod.string().nullish(),
+  agencyEmail: zod.string().nullish(),
+  agencyAddress: zod.string().nullish(),
+});
+
+/**
+ * @summary Update agency settings
+ */
+export const UpdateSettingsBody = zod.object({
+  agencyName: zod.string().optional(),
+  agencyNameEn: zod.string().optional(),
+  agencyLogoUrl: zod.string().nullish(),
+  agencyPhone: zod.string().nullish(),
+  agencyEmail: zod.string().nullish(),
+  agencyAddress: zod.string().nullish(),
+});
+
+export const UpdateSettingsResponse = zod.object({
+  agencyName: zod.string(),
+  agencyNameEn: zod.string(),
+  agencyLogoUrl: zod.string().nullish(),
+  agencyPhone: zod.string().nullish(),
+  agencyEmail: zod.string().nullish(),
+  agencyAddress: zod.string().nullish(),
+});
+
+/**
  * @summary List all expenses
  */
 export const ListExpensesQueryParams = zod.object({

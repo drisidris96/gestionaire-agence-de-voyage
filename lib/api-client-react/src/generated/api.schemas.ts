@@ -309,6 +309,32 @@ export interface BookingStatusCount {
   count: number;
 }
 
+export interface AgencySettings {
+  agencyName: string;
+  agencyNameEn: string;
+  /** @nullable */
+  agencyLogoUrl?: string | null;
+  /** @nullable */
+  agencyPhone?: string | null;
+  /** @nullable */
+  agencyEmail?: string | null;
+  /** @nullable */
+  agencyAddress?: string | null;
+}
+
+export interface UpdateSettingsBody {
+  agencyName?: string;
+  agencyNameEn?: string;
+  /** @nullable */
+  agencyLogoUrl?: string | null;
+  /** @nullable */
+  agencyPhone?: string | null;
+  /** @nullable */
+  agencyEmail?: string | null;
+  /** @nullable */
+  agencyAddress?: string | null;
+}
+
 export interface Expense {
   id: number;
   category: string;

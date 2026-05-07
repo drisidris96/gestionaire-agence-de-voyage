@@ -1,23 +1,12 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useListBookings, useListPayments } from "@workspace/api-client-react";
+import { useAgency } from "@/hooks/use-agency";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Printer, FileText, Receipt, Search, Building2, Phone, Mail, MapPin } from "lucide-react";
+import { Printer, FileText, Receipt, Search, Phone, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { methodAr, statusAr } from "@/lib/i18n";
-
-const AGENCY = {
-  name: "شويعر للسياحة والأسفار",
-  nameEn: "CHOUIAAR TRAVEL AGENCY",
-  phone: "+213 XXX XX XX XX",
-  email: "info@chouiaar-travel.dz",
-  address: "الجزائر، المغرب العربي",
-  registry: "سجل تجاري: RC-XXXXXXX",
-  tax: "رقم الضريبة: XX-XXX-XXXXXX",
-};
 
 function PrintArea({ children }: { children: React.ReactNode }) {
   return (
@@ -27,19 +16,29 @@ function PrintArea({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AgencyHeader({ docType, docNumber }: { docType: string; docNumber: string }) {
+function AgencyHeader({ docType, docNumber, agency }: {
+  docType: string;
+  docNumber: string;
+  agency: { agencyName: string; agencyNameEn: string; agencyLogoUrl?: string | null; agencyPhone?: string | null; agencyEmail?: string | null; agencyAddress?: string | null };
+}) {
+  const logoSrc = agency.agencyLogoUrl || "/logo.jpg";
   return (
     <div className="mb-6">
       <div className="flex items-start justify-between border-b-2 border-primary pb-5 mb-4" style={{ borderColor: "#C9A227" }}>
         <div className="flex items-center gap-4">
-          <img src="/logo.jpg" alt="شعار الوكالة" className="h-20 w-auto object-contain rounded" />
+          <img
+            src={logoSrc}
+            alt={agency.agencyName}
+            className="h-20 w-auto object-contain rounded"
+            onError={(e) => { (e.target as HTMLImageElement).src = "/logo.jpg"; }}
+          />
           <div>
-            <div className="text-xl font-black tracking-tight" style={{ color: "#C9A227" }}>{AGENCY.name}</div>
-            <div className="text-xs tracking-widest text-gray-500 font-medium">{AGENCY.nameEn}</div>
+            <div className="text-xl font-black tracking-tight" style={{ color: "#C9A227" }}>{agency.agencyName}</div>
+            <div className="text-xs tracking-widest text-gray-500 font-medium uppercase">{agency.agencyNameEn}</div>
             <div className="mt-1.5 space-y-0.5 text-[11px] text-gray-600">
-              <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {AGENCY.phone}</div>
-              <div className="flex items-center gap-1.5"><Mail className="h-3 w-3" /> {AGENCY.email}</div>
-              <div className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> {AGENCY.address}</div>
+              {agency.agencyPhone && <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {agency.agencyPhone}</div>}
+              {agency.agencyEmail && <div className="flex items-center gap-1.5"><Mail className="h-3 w-3" /> {agency.agencyEmail}</div>}
+              {agency.agencyAddress && <div className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> {agency.agencyAddress}</div>}
             </div>
           </div>
         </div>
@@ -51,23 +50,18 @@ function AgencyHeader({ docType, docNumber }: { docType: string; docNumber: stri
           </div>
         </div>
       </div>
-      <div className="flex gap-6 text-[11px] text-gray-500">
-        <span>{AGENCY.registry}</span>
-        <span>•</span>
-        <span>{AGENCY.tax}</span>
-      </div>
     </div>
   );
 }
 
-function AgencyFooter() {
+function AgencyFooter({ agency }: { agency: { agencyName: string; agencyNameEn: string } }) {
   return (
     <div className="mt-10 pt-4 border-t border-gray-200">
       <div className="grid grid-cols-2 gap-8 mt-6">
         <div>
           <div className="text-sm font-semibold text-gray-700 mb-6">توقيع المسؤول</div>
           <div className="border-b-2 border-dashed border-gray-300 w-40"></div>
-          <div className="text-xs text-gray-500 mt-1">{AGENCY.name}</div>
+          <div className="text-xs text-gray-500 mt-1">{agency.agencyName}</div>
         </div>
         <div className="text-left rtl:text-right">
           <div className="text-sm font-semibold text-gray-700 mb-6">توقيع العميل</div>
@@ -76,20 +70,18 @@ function AgencyFooter() {
         </div>
       </div>
       <div className="mt-6 text-center text-[10px] text-gray-400 border-t pt-3">
-        شكراً لثقتكم بنا — {AGENCY.name} — {AGENCY.nameEn}
+        شكراً لثقتكم بنا — {agency.agencyName} — {agency.agencyNameEn}
       </div>
     </div>
   );
 }
 
-function InvoiceDoc({ booking }: { booking: any }) {
+function InvoiceDoc({ booking, agency }: { booking: any; agency: any }) {
   const paidAmount = booking.paidAmount ?? 0;
   const remaining = booking.totalPrice - paidAmount;
   return (
     <PrintArea>
-      <AgencyHeader docType="فـاتـورة" docNumber={`INV-${String(booking.id).padStart(4, "0")}`} />
-
-      {/* Client Info */}
+      <AgencyHeader docType="فـاتـورة" docNumber={`INV-${String(booking.id).padStart(4, "0")}`} agency={agency} />
       <div className="bg-gray-50 rounded-lg p-4 mb-5 border-r-4" style={{ borderColor: "#C9A227" }}>
         <div className="text-sm font-bold text-gray-700 mb-2">بيانات العميل</div>
         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -98,7 +90,6 @@ function InvoiceDoc({ booking }: { booking: any }) {
         </div>
       </div>
 
-      {/* Trip Details Table */}
       <table className="w-full text-sm mb-5 border-collapse">
         <thead>
           <tr style={{ backgroundColor: "#C9A227", color: "white" }}>
@@ -143,8 +134,7 @@ function InvoiceDoc({ booking }: { booking: any }) {
         </tbody>
       </table>
 
-      {/* Financial Summary */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden mb-5">
         <div className="grid grid-cols-3 divide-x divide-x-reverse">
           <div className="p-4 text-center">
             <div className="text-xs text-gray-500 mb-1">الإجمالي</div>
@@ -162,21 +152,19 @@ function InvoiceDoc({ booking }: { booking: any }) {
       </div>
 
       {booking.notes && (
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-gray-700">
+        <div className="p-3 bg-blue-50 rounded-lg text-sm text-gray-700 mb-4">
           <span className="font-semibold">ملاحظات: </span>{booking.notes}
         </div>
       )}
-
-      <AgencyFooter />
+      <AgencyFooter agency={agency} />
     </PrintArea>
   );
 }
 
-function ReceiptDoc({ payment, booking }: { payment: any; booking: any }) {
+function ReceiptDoc({ payment, booking, agency }: { payment: any; booking: any; agency: any }) {
   return (
     <PrintArea>
-      <AgencyHeader docType="وصـل استـلام" docNumber={`PAY-${String(payment.id).padStart(4, "0")}`} />
-
+      <AgencyHeader docType="وصـل استـلام" docNumber={`PAY-${String(payment.id).padStart(4, "0")}`} agency={agency} />
       <div className="bg-gray-50 rounded-lg p-4 mb-5 border-r-4" style={{ borderColor: "#C9A227" }}>
         <div className="text-sm font-bold text-gray-700 mb-2">بيانات العميل</div>
         <div className="text-sm"><span className="text-gray-500">الاسم: </span><span className="font-medium">{booking?.clientName ?? "—"}</span></div>
@@ -212,8 +200,7 @@ function ReceiptDoc({ payment, booking }: { payment: any; booking: any }) {
           <span className="font-semibold">مرجع / ملاحظة: </span>{payment.notes}
         </div>
       )}
-
-      <AgencyFooter />
+      <AgencyFooter agency={agency} />
     </PrintArea>
   );
 }
@@ -224,6 +211,7 @@ export default function DocumentsPage() {
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
 
+  const { settings } = useAgency();
   const { data: bookings, isLoading: bookingsLoading } = useListBookings({});
   const { data: allPayments, isLoading: paymentsLoading } = useListPayments({}, {
     query: { enabled: true }
@@ -247,10 +235,6 @@ export default function DocumentsPage() {
   const selectedPayment = allPayments?.find(p => p.id === selectedPaymentId);
   const paymentBooking = selectedPayment ? bookings?.find(b => b.id === selectedPayment.bookingId) : null;
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const hasDoc = docMode === "invoice" ? !!selectedBooking : !!selectedPayment;
 
   return (
@@ -267,10 +251,10 @@ export default function DocumentsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">المستندات المالية</h1>
-            <p className="text-muted-foreground mt-1">استخراج الفواتير ووصولات الاستلام باسم وكالة شويعر.</p>
+            <p className="text-muted-foreground mt-1">استخراج الفواتير ووصولات الاستلام باسم {settings.agencyName}.</p>
           </div>
           {hasDoc && (
-            <Button onClick={handlePrint} className="gap-2" data-testid="button-print">
+            <Button onClick={() => window.print()} className="gap-2" data-testid="button-print">
               <Printer className="h-4 w-4" /> طباعة المستند
             </Button>
           )}
@@ -279,7 +263,6 @@ export default function DocumentsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-6">
           {/* Selector Panel */}
           <div className="space-y-4">
-            {/* Doc Type Toggle */}
             <div className="grid grid-cols-2 gap-2 bg-muted p-1 rounded-lg">
               <button
                 onClick={() => { setDocMode("invoice"); setSelectedPaymentId(null); }}
@@ -295,7 +278,6 @@ export default function DocumentsPage() {
               </button>
             </div>
 
-            {/* Search */}
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -306,7 +288,6 @@ export default function DocumentsPage() {
               />
             </div>
 
-            {/* List */}
             <div className="border rounded-lg overflow-hidden bg-card max-h-[500px] overflow-y-auto">
               {docMode === "invoice" ? (
                 bookingsLoading ? (
@@ -320,7 +301,6 @@ export default function DocumentsPage() {
                       onClick={() => setSelectedBookingId(b.id)}
                       className={`w-full text-right p-3 border-b last:border-b-0 transition-colors flex items-start gap-3 ${selectedBookingId === b.id ? "bg-primary/5 border-r-2" : "hover:bg-muted/40"}`}
                       style={selectedBookingId === b.id ? { borderRightColor: "#C9A227" } : {}}
-                      data-testid={`select-booking-${b.id}`}
                     >
                       <FileText className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                       <div className="flex-1 min-w-0">
@@ -346,7 +326,6 @@ export default function DocumentsPage() {
                       onClick={() => setSelectedPaymentId(p.id)}
                       className={`w-full text-right p-3 border-b last:border-b-0 transition-colors flex items-start gap-3 ${selectedPaymentId === p.id ? "bg-primary/5 border-r-2" : "hover:bg-muted/40"}`}
                       style={selectedPaymentId === p.id ? { borderRightColor: "#C9A227" } : {}}
-                      data-testid={`select-payment-${p.id}`}
                     >
                       <Receipt className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                       <div className="flex-1 min-w-0">
@@ -375,9 +354,9 @@ export default function DocumentsPage() {
                 </div>
               </div>
             ) : docMode === "invoice" && selectedBooking ? (
-              <InvoiceDoc booking={selectedBooking} />
+              <InvoiceDoc booking={selectedBooking} agency={settings} />
             ) : selectedPayment ? (
-              <ReceiptDoc payment={selectedPayment} booking={paymentBooking} />
+              <ReceiptDoc payment={selectedPayment} booking={paymentBooking} agency={settings} />
             ) : null}
           </div>
         </div>

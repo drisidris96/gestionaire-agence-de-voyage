@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { AgencyProvider } from "@/hooks/use-agency";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 
@@ -60,10 +61,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <ProtectedRouter />
-          </WouterRouter>
-          <Toaster />
+          <AgencyProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <ProtectedRouter />
+            </WouterRouter>
+            <Toaster />
+          </AgencyProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

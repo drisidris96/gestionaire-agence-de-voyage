@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut, FileText, TrendingUp } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/use-auth";
+import { useAgency } from "@/hooks/use-agency";
 
 const navigation = [
   { name: "لوحة القيادة", href: "/", icon: LayoutDashboard },
@@ -21,6 +22,9 @@ const financeNavigation = [
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { logout, username } = useAuth();
+  const { settings } = useAgency();
+
+  const logoSrc = settings.agencyLogoUrl || "/logo.jpg";
 
   return (
     <SidebarProvider>
@@ -29,13 +33,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarHeader className="p-0 border-b border-sidebar-border">
             <div className="flex flex-col items-center justify-center gap-1 py-4 px-3">
               <img
-                src="/logo.jpg"
-                alt="شويعر للسياحة والأسفار"
+                src={logoSrc}
+                alt={settings.agencyName}
                 className="w-full max-h-24 object-contain rounded-lg"
+                onError={(e) => { (e.target as HTMLImageElement).src = "/logo.jpg"; }}
               />
               <div className="text-center mt-1">
-                <div className="font-bold text-sm text-sidebar-primary leading-tight">شويعر للسياحة والأسفار</div>
-                <div className="text-[10px] text-sidebar-foreground/50 tracking-wide">CHOUIAAR TRAVEL AGENCY</div>
+                <div className="font-bold text-sm text-sidebar-primary leading-tight">{settings.agencyName}</div>
+                <div className="text-[10px] text-sidebar-foreground/50 tracking-wide">{settings.agencyNameEn}</div>
               </div>
             </div>
           </SidebarHeader>
@@ -115,8 +120,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <header className="h-14 border-b bg-sidebar flex items-center justify-between gap-3 px-4 md:hidden">
             <div className="flex items-center gap-3">
-              <img src="/logo.jpg" alt="شويعر" className="h-9 w-auto object-contain rounded" />
-              <div className="font-bold text-sidebar-primary text-sm">شويعر للسياحة والأسفار</div>
+              <img
+                src={logoSrc}
+                alt={settings.agencyName}
+                className="h-9 w-auto object-contain rounded"
+                onError={(e) => { (e.target as HTMLImageElement).src = "/logo.jpg"; }}
+              />
+              <div className="font-bold text-sidebar-primary text-sm">{settings.agencyName}</div>
             </div>
             <button
               onClick={logout}

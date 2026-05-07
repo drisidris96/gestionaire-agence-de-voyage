@@ -8,6 +8,7 @@ import paymentsRouter from "./payments";
 import dashboardRouter from "./dashboard";
 import storageRouter from "./storage";
 import expensesRouter from "./expenses";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(paymentsRouter);
 router.use(dashboardRouter);
 router.use(storageRouter);
 router.use(expensesRouter);
+router.use(settingsRouter);
 
 export default router;
