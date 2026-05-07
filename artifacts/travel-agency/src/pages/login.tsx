@@ -49,7 +49,7 @@ export default function LoginPage() {
             <img src="/logo.jpg" alt="شويعر للسياحة والأسفار" className="w-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-white mt-2">شويعر للسياحة والأسفار</h1>
-          <p className="text-sm mt-1" style={{ color: "hsl(43 73% 60%)" }}>لوحة تحكم الإدارة</p>
+          <p className="text-sm mt-1" style={{ color: "hsl(43 73% 60%)" }}>برنامج تسيير الوكالات السياحية</p>
         </div>
 
         {/* Card */}
