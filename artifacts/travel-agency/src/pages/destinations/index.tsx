@@ -184,7 +184,7 @@ export default function DestinationsPage() {
                 ) : (
                   <ImageIcon className="h-12 w-12 text-muted-foreground opacity-20" />
                 )}
-                <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 left-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="secondary" size="icon" className="h-8 w-8 shadow-sm">

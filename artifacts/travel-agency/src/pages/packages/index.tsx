@@ -191,7 +191,7 @@ export default function PackagesPage() {
                 <div className="absolute top-2 right-2">
                   <Badge variant={pkg.isActive ? "default" : "secondary"}>{pkg.isActive ? 'نشطة' : 'موقوفة'}</Badge>
                 </div>
-                <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 left-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="secondary" size="icon" className="h-8 w-8 shadow-sm">

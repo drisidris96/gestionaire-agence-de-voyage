@@ -223,7 +223,7 @@ export default function BookingsPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" data-testid={`menu-booking-${booking.id}`}>
+                          <Button variant="ghost" className="h-8 w-8 p-0" data-testid={`menu-booking-${booking.id}`}>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
