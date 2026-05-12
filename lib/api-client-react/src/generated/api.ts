@@ -56,6 +56,8 @@ import type {
   PurchaseOrder,
   Reminder,
   Supplier,
+  TopClientItem,
+  TopDestinationItem,
   UpdateBookingBody,
   UpdateClientBody,
   UpdateDestinationBody,
@@ -2531,6 +2533,156 @@ export function useGetBookingsByStatus<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetBookingsByStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Top destinations by booking count
+ */
+export const getGetTopDestinationsUrl = () => {
+  return `/api/dashboard/top-destinations`;
+};
+
+export const getTopDestinations = async (
+  options?: RequestInit,
+): Promise<TopDestinationItem[]> => {
+  return customFetch<TopDestinationItem[]>(getGetTopDestinationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTopDestinationsQueryKey = () => {
+  return [`/api/dashboard/top-destinations`] as const;
+};
+
+export const getGetTopDestinationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTopDestinations>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTopDestinations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTopDestinationsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTopDestinations>>
+  > = ({ signal }) => getTopDestinations({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTopDestinations>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTopDestinationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTopDestinations>>
+>;
+export type GetTopDestinationsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Top destinations by booking count
+ */
+
+export function useGetTopDestinations<
+  TData = Awaited<ReturnType<typeof getTopDestinations>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTopDestinations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTopDestinationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Top clients by total revenue
+ */
+export const getGetTopClientsUrl = () => {
+  return `/api/dashboard/top-clients`;
+};
+
+export const getTopClients = async (
+  options?: RequestInit,
+): Promise<TopClientItem[]> => {
+  return customFetch<TopClientItem[]>(getGetTopClientsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTopClientsQueryKey = () => {
+  return [`/api/dashboard/top-clients`] as const;
+};
+
+export const getGetTopClientsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTopClients>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTopClients>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTopClientsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTopClients>>> = ({
+    signal,
+  }) => getTopClients({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTopClients>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTopClientsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTopClients>>
+>;
+export type GetTopClientsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Top clients by total revenue
+ */
+
+export function useGetTopClients<
+  TData = Awaited<ReturnType<typeof getTopClients>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTopClients>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTopClientsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

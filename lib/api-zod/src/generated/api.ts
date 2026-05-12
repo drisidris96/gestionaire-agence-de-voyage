@@ -516,6 +516,30 @@ export const GetBookingsByStatusResponse = zod.array(
 );
 
 /**
+ * @summary Top destinations by booking count
+ */
+export const GetTopDestinationsResponseItem = zod.object({
+  destinationId: zod.number(),
+  destinationName: zod.string(),
+  bookingCount: zod.number(),
+  totalRevenue: zod.number(),
+});
+export const GetTopDestinationsResponse = zod.array(
+  GetTopDestinationsResponseItem,
+);
+
+/**
+ * @summary Top clients by total revenue
+ */
+export const GetTopClientsResponseItem = zod.object({
+  clientId: zod.number(),
+  clientName: zod.string(),
+  bookingCount: zod.number(),
+  totalSpent: zod.number(),
+});
+export const GetTopClientsResponse = zod.array(GetTopClientsResponseItem);
+
+/**
  * @summary Get agency settings
  */
 export const GetSettingsResponse = zod.object({

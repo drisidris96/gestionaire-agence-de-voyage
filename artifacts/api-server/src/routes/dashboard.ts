@@ -6,6 +6,8 @@ import {
   GetRecentBookingsResponse,
   GetRevenueByMonthResponse,
   GetBookingsByStatusResponse,
+  GetTopDestinationsResponse,
+  GetTopClientsResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -94,6 +96,41 @@ router.get("/dashboard/bookings-by-status", async (_req, res): Promise<void> => 
     .groupBy(bookingsTable.status);
 
   res.json(GetBookingsByStatusResponse.parse(rows));
+});
+
+router.get("/dashboard/top-destinations", async (_req, res): Promise<void> => {
+  const result = await db.execute(sql`
+    SELECT
+      d.id AS "destinationId",
+      d.name AS "destinationName",
+      COUNT(b.id)::int AS "bookingCount",
+      COALESCE(SUM(b.total_price), 0)::float AS "totalRevenue"
+    FROM destinations d
+    JOIN packages p ON p.destination_id = d.id
+    JOIN bookings b ON b.package_id = p.id
+    GROUP BY d.id, d.name
+    ORDER BY "bookingCount" DESC
+    LIMIT 5
+  `);
+  const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+  res.json(GetTopDestinationsResponse.parse(rows));
+});
+
+router.get("/dashboard/top-clients", async (_req, res): Promise<void> => {
+  const result = await db.execute(sql`
+    SELECT
+      c.id AS "clientId",
+      c.full_name AS "clientName",
+      COUNT(b.id)::int AS "bookingCount",
+      COALESCE(SUM(b.total_price), 0)::float AS "totalSpent"
+    FROM clients c
+    JOIN bookings b ON b.client_id = c.id
+    GROUP BY c.id, c.full_name
+    ORDER BY "totalSpent" DESC
+    LIMIT 5
+  `);
+  const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+  res.json(GetTopClientsResponse.parse(rows));
 });
 
 export default router;

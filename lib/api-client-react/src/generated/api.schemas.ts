@@ -304,6 +304,20 @@ export interface MonthlyRevenue {
   bookings: number;
 }
 
+export interface TopDestinationItem {
+  destinationId: number;
+  destinationName: string;
+  bookingCount: number;
+  totalRevenue: number;
+}
+
+export interface TopClientItem {
+  clientId: number;
+  clientName: string;
+  bookingCount: number;
+  totalSpent: number;
+}
+
 export interface BookingStatusCount {
   status: string;
   count: number;

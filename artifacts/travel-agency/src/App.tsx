@@ -26,6 +26,7 @@ import GroupsPage from "@/pages/groups/index";
 import RemindersPage from "@/pages/reminders/index";
 import CalendarPage from "@/pages/calendar/index";
 import MessagesPage from "@/pages/messages/index";
+import AnalyticsPage from "@/pages/analytics/index";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +65,7 @@ function ProtectedRouter() {
         <Route path="/reminders" component={RemindersPage} />
         <Route path="/calendar" component={CalendarPage} />
         <Route path="/messages" component={MessagesPage} />
+        <Route path="/analytics" component={AnalyticsPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

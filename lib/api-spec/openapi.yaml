@@ -560,6 +560,36 @@ paths:
                 items:
                   $ref: "#/components/schemas/BookingStatusCount"
 
+  /dashboard/top-destinations:
+    get:
+      operationId: getTopDestinations
+      tags: [dashboard]
+      summary: Top destinations by booking count
+      responses:
+        "200":
+          description: Top destinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopDestinationItem"
+
+  /dashboard/top-clients:
+    get:
+      operationId: getTopClients
+      tags: [dashboard]
+      summary: Top clients by total revenue
+      responses:
+        "200":
+          description: Top clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopClientItem"
+
   # ─── Settings ───────────────────────────────────────────────────────────────
   /settings:
     get:
@@ -1646,6 +1676,32 @@ components:
           type: number
         bookings:
           type: integer
+
+    TopDestinationItem:
+      type: object
+      required: [destinationId, destinationName, bookingCount, totalRevenue]
+      properties:
+        destinationId:
+          type: integer
+        destinationName:
+          type: string
+        bookingCount:
+          type: integer
+        totalRevenue:
+          type: number
+
+    TopClientItem:
+      type: object
+      required: [clientId, clientName, bookingCount, totalSpent]
+      properties:
+        clientId:
+          type: integer
+        clientName:
+          type: string
+        bookingCount:
+          type: integer
+        totalSpent:
+          type: number
 
     BookingStatusCount:
       type: object

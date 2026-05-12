@@ -8,8 +8,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Plus, MoreHorizontal, Pencil, Trash2, FileText, Filter, CheckCircle, XCircle, Hotel, Plane, Building2, Loader2, Download } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2, FileText, Filter, CheckCircle, XCircle, Hotel, Plane, Building2, Loader2, Download, Printer } from "lucide-react";
 import { downloadCSV } from "@/lib/export-csv";
+import { InvoiceModal } from "@/components/InvoiceModal";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -68,6 +69,7 @@ export default function BookingsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<any>(null);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [invoiceBooking, setInvoiceBooking] = useState<any>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -240,6 +242,9 @@ export default function BookingsPage() {
                             <Link href={`/bookings/${booking.id}`} className="cursor-pointer flex items-center">
                               <FileText className="ml-2 h-4 w-4" /> تفاصيل الحجز
                             </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setInvoiceBooking(booking)} className="cursor-pointer">
+                            <Printer className="ml-2 h-4 w-4" /> طباعة الفاتورة
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(booking)} className="cursor-pointer">
                             <Pencil className="ml-2 h-4 w-4" /> تعديل
@@ -422,6 +427,12 @@ export default function BookingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <InvoiceModal
+        booking={invoiceBooking}
+        open={!!invoiceBooking}
+        onClose={() => setInvoiceBooking(null)}
+      />
     </div>
   );
 }

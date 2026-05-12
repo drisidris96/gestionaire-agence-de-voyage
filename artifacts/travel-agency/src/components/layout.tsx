@@ -1,8 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut, FileText, TrendingUp, UserCog, ShoppingCart, Building2, UsersRound, Bell, CalendarDays, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut, FileText, TrendingUp, UserCog, ShoppingCart, Building2, UsersRound, Bell, CalendarDays, MessageSquare, BarChart3 } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useAgency } from "@/hooks/use-agency";
+import { useListReminders } from "@workspace/api-client-react";
 
 const navigation = [
   { name: "لوحة القيادة", href: "/", icon: LayoutDashboard },
@@ -25,6 +27,7 @@ const hrNavigation = [
 ];
 
 const operationsNavigation = [
+  { name: "تحليل الأداء", href: "/analytics", icon: BarChart3 },
   { name: "تقويم الرحلات", href: "/calendar", icon: CalendarDays },
   { name: "الحجوزات الجماعية", href: "/groups", icon: UsersRound },
   { name: "التذكيرات", href: "/reminders", icon: Bell },
@@ -36,6 +39,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { logout, username } = useAuth();
   const { settings } = useAgency();
+  const { data: reminders } = useListReminders();
+
+  const todayReminders = reminders?.filter(r => {
+    if (r.isDone) return false;
+    const due = new Date(r.dueDate);
+    const today = new Date();
+    return due.toDateString() === today.toDateString() || due < today;
+  }) ?? [];
 
   const logoSrc = settings.agencyLogoUrl || "/logo.jpg";
 
@@ -128,12 +139,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenu>
                   {operationsNavigation.map((item) => {
                     const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                    const isReminders = item.href === "/reminders";
+                    const badgeCount = isReminders && todayReminders.length > 0 ? todayReminders.length : 0;
                     return (
                       <SidebarMenuItem key={item.name}>
                         <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
                           <Link href={item.href} className="flex items-center gap-3 w-full">
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.name}</span>
+                            <item.icon className="h-4 w-4 shrink-0" />
+                            <span className="flex-1">{item.name}</span>
+                            {badgeCount > 0 && (
+                              <Badge className="h-4 min-w-4 px-1 text-[10px] bg-red-500 text-white border-0 rounded-full flex items-center justify-center">
+                                {badgeCount}
+                              </Badge>
+                            )}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
