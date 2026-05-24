@@ -182,7 +182,7 @@ export default function BookingDetail() {
             <span className="text-foreground">حجز #{booking.id}</span>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold tracking-tight">حجز رقم #{booking.id}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">حجز رقم #{booking.id}</h1>
             <Badge variant={STATUS_VARIANT[booking.status] ?? "outline"} data-testid="status-badge">
               {statusAr(booking.status)}
             </Badge>

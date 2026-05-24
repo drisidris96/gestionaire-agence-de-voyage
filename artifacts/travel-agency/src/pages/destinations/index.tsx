@@ -149,12 +149,12 @@ export default function DestinationsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">الوجهات</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">الوجهات</h1>
           <p className="text-muted-foreground mt-1">إدارة الوجهات السياحية المتاحة في الباقات.</p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)} data-testid="button-add-destination">
+        <Button onClick={() => setIsFormOpen(true)} data-testid="button-add-destination" className="w-full sm:w-auto">
           <Plus className="ml-2 h-4 w-4" /> إضافة وجهة
         </Button>
       </div>

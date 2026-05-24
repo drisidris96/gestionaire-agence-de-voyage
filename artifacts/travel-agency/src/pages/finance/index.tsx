@@ -199,7 +199,7 @@ export default function FinancePage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">المالية والأرباح</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">المالية والأرباح</h1>
           <p className="text-muted-foreground mt-1">مراقبة الإيرادات والمصاريف وصافي الأرباح.</p>
         </div>
         <Button onClick={() => setIsFormOpen(true)} data-testid="button-add-expense">

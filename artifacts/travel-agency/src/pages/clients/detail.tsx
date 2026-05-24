@@ -139,7 +139,7 @@ export default function ClientDetail() {
             <span>/</span>
             <span className="text-foreground">{client.fullName}</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">{client.fullName}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{client.fullName}</h1>
           <p className="text-muted-foreground mt-1">تفاصيل العميل وسجل حجوزاته</p>
         </div>
 

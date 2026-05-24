@@ -74,7 +74,7 @@ export default function SuppliersPage() {
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">الموردون والشركاء</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">الموردون والشركاء</h1>
             <p className="text-muted-foreground mt-1">إدارة الفنادق وشركات الطيران والموردين.</p>
           </div>
           <Button onClick={() => setIsOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> إضافة مورد</Button>
