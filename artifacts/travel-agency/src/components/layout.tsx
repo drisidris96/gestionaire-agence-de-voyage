@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut, FileText, TrendingUp, UserCog, ShoppingCart, Building2, UsersRound, Bell, CalendarDays, MessageSquare, BarChart3 } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useAgency } from "@/hooks/use-agency";
@@ -53,7 +53,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-muted/20 w-full" dir="rtl">
-        <Sidebar className="border-l bg-sidebar text-sidebar-foreground hidden md:flex" side="right">
+        <Sidebar className="border-l bg-sidebar text-sidebar-foreground" side="right">
           <SidebarHeader className="p-0 border-b border-sidebar-border">
             <div className="flex flex-col items-center justify-center gap-1 py-4 px-3">
               <img
@@ -192,18 +192,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <header className="h-14 border-b bg-sidebar flex items-center justify-between gap-3 px-4 md:hidden">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <SidebarTrigger className="text-sidebar-foreground" />
               <img
                 src={logoSrc}
                 alt={settings.agencyName}
                 className="h-9 w-auto object-contain rounded"
                 onError={(e) => { (e.target as HTMLImageElement).src = "/logo.jpg"; }}
               />
-              <div className="font-bold text-sidebar-primary text-sm">{settings.agencyName}</div>
+              <div className="font-bold text-sidebar-primary text-sm truncate">{settings.agencyName}</div>
             </div>
             <button
               onClick={logout}
-              className="flex items-center gap-1 text-xs px-2 py-1 rounded"
+              className="flex items-center gap-1 text-xs px-2 py-1 rounded shrink-0"
               style={{ color: "hsl(0 84% 65%)", background: "rgba(220,38,38,0.1)" }}
             >
               <LogOut className="h-3.5 w-3.5" />
