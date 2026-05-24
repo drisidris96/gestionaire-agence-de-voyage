@@ -124,10 +124,15 @@ export default function ClientsPage() {
             />
           </div>
           <Button variant="outline" size="sm" onClick={() => {
-            const rows = filteredClients ?? [];
+            const rows = clients?.filter(c =>
+              !search ||
+              c.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+              c.phone?.includes(search) ||
+              c.email?.toLowerCase().includes(search.toLowerCase())
+            ) ?? [];
             downloadCSV("clients.csv",
               ["#", "الاسم", "الهاتف", "البريد الإلكتروني", "الجنسية", "تاريخ الإضافة"],
-              rows.map(c => [c.id, c.name, c.phone ?? "", c.email ?? "", c.nationality ?? "", c.createdAt])
+              rows.map(c => [c.id, c.fullName, c.phone ?? "", c.email ?? "", c.nationality ?? "", c.createdAt])
             );
           }} className="gap-1.5 shrink-0"><Download className="h-4 w-4" /> CSV</Button>
 

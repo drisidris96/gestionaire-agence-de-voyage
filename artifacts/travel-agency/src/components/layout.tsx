@@ -42,7 +42,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: reminders } = useListReminders();
 
   const todayReminders = reminders?.filter(r => {
-    if (r.isDone) return false;
+    if (r.isCompleted) return false;
     const due = new Date(r.dueDate);
     const today = new Date();
     return due.toDateString() === today.toDateString() || due < today;

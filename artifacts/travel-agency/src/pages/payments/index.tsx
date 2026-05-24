@@ -45,7 +45,7 @@ export default function PaymentsPage() {
           <Button variant="outline" size="sm" onClick={() => {
             downloadCSV("payments.csv",
               ["#", "التاريخ", "العميل", "رقم الحجز", "المبلغ", "طريقة الدفع", "ملاحظات"],
-              (filteredPayments ?? []).map(p => [p.id, p.date, p.clientName ?? "", p.bookingId, p.amount, p.method, p.notes ?? ""])
+              (filteredPayments ?? []).map(p => [p.id, p.paymentDate, p.clientName ?? "", p.bookingId, p.amount, p.method, p.notes ?? ""])
             );
           }} className="gap-1.5 shrink-0"><Download className="h-4 w-4" /> CSV</Button>
         </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   useListGroups, useCreateGroup, useUpdateGroup, useDeleteGroup,
-  useGetGroup, useAddGroupMember, useRemoveGroupMember,
+  useGetGroup, useAddGroupMember, useRemoveGroupMember, getGetGroupQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -57,7 +57,7 @@ const QK = ["listGroups"];
 
 function GroupCard({ g, onEdit, onDelete }: { g: any; onEdit: () => void; onDelete: () => void }) {
   const [open, setOpen] = useState(false);
-  const { data: detail } = useGetGroup(g.id, { query: { enabled: open } });
+  const { data: detail } = useGetGroup(g.id, { query: { enabled: open, queryKey: getGetGroupQueryKey(g.id) } });
   const addMember = useAddGroupMember();
   const removeMember = useRemoveGroupMember();
   const { toast } = useToast();

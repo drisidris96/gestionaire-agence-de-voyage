@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListBookings, useListPayments } from "@workspace/api-client-react";
+import { useListBookings, useListPayments, getListPaymentsQueryKey } from "@workspace/api-client-react";
 import { useAgency } from "@/hooks/use-agency";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -214,7 +214,7 @@ export default function DocumentsPage() {
   const { settings } = useAgency();
   const { data: bookings, isLoading: bookingsLoading } = useListBookings({});
   const { data: allPayments, isLoading: paymentsLoading } = useListPayments({}, {
-    query: { enabled: true }
+    query: { enabled: true, queryKey: getListPaymentsQueryKey({}) }
   });
 
   const filteredBookings = bookings?.filter(b =>

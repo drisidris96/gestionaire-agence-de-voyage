@@ -110,9 +110,9 @@ export function InvoiceModal({ booking, open, onClose }: Props) {
               )}
               <h1 className="text-xl font-bold text-gray-900">{settings.agencyName}</h1>
               {settings.agencyNameEn && <p className="text-xs text-gray-500">{settings.agencyNameEn}</p>}
-              {settings.phone && <p className="text-xs text-gray-500 mt-1">📞 {settings.phone}</p>}
-              {settings.email && <p className="text-xs text-gray-500">✉ {settings.email}</p>}
-              {settings.address && <p className="text-xs text-gray-500">📍 {settings.address}</p>}
+              {settings.agencyPhone && <p className="text-xs text-gray-500 mt-1">📞 {settings.agencyPhone}</p>}
+              {settings.agencyEmail && <p className="text-xs text-gray-500">✉ {settings.agencyEmail}</p>}
+              {settings.agencyAddress && <p className="text-xs text-gray-500">📍 {settings.agencyAddress}</p>}
             </div>
             <div className="text-left">
               <div className="text-3xl font-extrabold text-amber-600 tracking-wide">فاتورة</div>

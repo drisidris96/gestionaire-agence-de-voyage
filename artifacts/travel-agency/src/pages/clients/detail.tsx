@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import {
   useGetClient, useListBookings, useUpdateClient, useDeleteClient,
-  getListClientsQueryKey
+  getListClientsQueryKey, getGetClientQueryKey, getListBookingsQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -60,11 +60,11 @@ export default function ClientDetail() {
   const deleteClient = useDeleteClient();
 
   const { data: client, isLoading: clientLoading } = useGetClient(clientId, {
-    query: { enabled: !!clientId }
+    query: { enabled: !!clientId, queryKey: getGetClientQueryKey(clientId) }
   });
 
   const { data: bookings, isLoading: bookingsLoading } = useListBookings({ clientId }, {
-    query: { enabled: !!clientId }
+    query: { enabled: !!clientId, queryKey: getListBookingsQueryKey({ clientId }) }
   });
 
   const form = useForm<ClientFormValues>({

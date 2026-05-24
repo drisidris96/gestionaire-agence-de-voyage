@@ -37,7 +37,7 @@ export default function CalendarPage() {
 
   const getBookingsForDay = (day: Date) =>
     bookings?.filter(b => {
-      const dep = b.departureDate ? new Date(b.departureDate) : null;
+      const dep = b.travelDate ? new Date(b.travelDate) : null;
       const ret = b.returnDate ? new Date(b.returnDate) : null;
       if (dep && isSameDay(dep, day)) return true;
       if (ret && isSameDay(ret, day)) return true;
@@ -55,11 +55,11 @@ export default function CalendarPage() {
   // Upcoming bookings (next 30 days)
   const today = new Date();
   const upcoming = bookings?.filter(b => {
-    const dep = b.departureDate ? new Date(b.departureDate) : null;
+    const dep = b.travelDate ? new Date(b.travelDate) : null;
     if (!dep) return false;
     const diff = (dep.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
     return diff >= 0 && diff <= 30 && b.status !== "cancelled";
-  }).sort((a, b) => new Date(a.departureDate!).getTime() - new Date(b.departureDate!).getTime()) ?? [];
+  }).sort((a, b) => new Date(a.travelDate!).getTime() - new Date(b.travelDate!).getTime()) ?? [];
 
   return (
     <>
@@ -140,7 +140,7 @@ export default function CalendarPage() {
                 لا توجد رحلات قادمة.
               </div>
             ) : upcoming.map(b => {
-              const dep = new Date(b.departureDate!);
+              const dep = new Date(b.travelDate!);
               const daysLeft = Math.ceil((dep.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
               return (
                 <div key={b.id} className="bg-card border rounded-xl p-3 shadow-sm">
@@ -170,7 +170,7 @@ export default function CalendarPage() {
           </DialogHeader>
           <div className="space-y-3 mt-2">
             {selectedDayBookings.map(b => {
-              const isDep = b.departureDate && isSameDay(new Date(b.departureDate), selectedDay!);
+              const isDep = b.travelDate && isSameDay(new Date(b.travelDate), selectedDay!);
               return (
                 <div key={b.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg border">
                   <div className={`mt-1 h-3 w-3 rounded-full shrink-0 ${STATUS_COLORS[b.status]}`} />

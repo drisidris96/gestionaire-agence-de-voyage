@@ -162,10 +162,10 @@ export default function BookingsPage() {
             </SelectContent>
           </Select>
           <Button variant="outline" onClick={() => {
-            const filtered2 = filteredBookings ?? [];
+            const filtered2 = bookings ?? [];
             downloadCSV("bookings.csv",
               ["#", "العميل", "الباقة", "تاريخ السفر", "تاريخ العودة", "الإجمالي", "الحالة"],
-              filtered2.map(b => [b.id, b.clientName, b.packageName, b.departureDate ?? "", b.returnDate ?? "", b.totalPrice, b.status])
+              filtered2.map(b => [b.id, b.clientName ?? "", b.packageName ?? "", b.travelDate ?? "", b.returnDate ?? "", b.totalPrice, b.status])
             );
           }} className="gap-1.5"><Download className="h-4 w-4" /> تصدير CSV</Button>
           <Button onClick={() => setIsFormOpen(true)} data-testid="button-add-booking">
