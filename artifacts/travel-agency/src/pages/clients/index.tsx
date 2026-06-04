@@ -22,16 +22,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 
 const clientSchema = z.object({
   fullName: z.string().min(2, "الاسم مطلوب"),
   phone: z.string().min(5, "رقم الهاتف مطلوب"),
-  email: z.string().email("البريد الإلكتروني غير صحيح").or(z.literal("")).optional(),
+  email: z.string().optional(),
   address: z.string().optional(),
   passportNumber: z.string().optional(),
   nationality: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -58,7 +56,6 @@ export default function ClientsPage() {
       address: "",
       passportNumber: "",
       nationality: "",
-      notes: "",
     }
   });
 
@@ -118,7 +115,6 @@ export default function ClientsPage() {
       address: client.address || "",
       passportNumber: client.passportNumber || "",
       nationality: client.nationality || "",
-      notes: client.notes || "",
     });
     setIsAddOpen(true);
   };
@@ -189,7 +185,7 @@ export default function ClientsPage() {
                     <FormField control={form.control} name="email" render={({ field }) => (
                       <FormItem>
                         <FormLabel>البريد الإلكتروني</FormLabel>
-                        <FormControl><Input {...field} type="email" data-testid="input-email" /></FormControl>
+                        <FormControl><Input {...field} data-testid="input-email" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -211,13 +207,6 @@ export default function ClientsPage() {
                       <FormItem className="col-span-2">
                         <FormLabel>العنوان</FormLabel>
                         <FormControl><Input {...field} data-testid="input-address" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="notes" render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>ملاحظات</FormLabel>
-                        <FormControl><Textarea {...field} data-testid="input-notes" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
