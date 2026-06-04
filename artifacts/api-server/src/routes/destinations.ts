@@ -27,7 +27,10 @@ router.post("/destinations", async (req, res): Promise<void> => {
     return;
   }
 
-  const [destination] = await db.insert(destinationsTable).values(parsed.data).returning();
+  const [destination] = await db.insert(destinationsTable).values({
+    ...parsed.data,
+    price: parsed.data.price != null ? String(parsed.data.price) : null,
+  }).returning();
   res.status(201).json(GetDestinationResponse.parse({ ...destination, price: destination.price != null ? Number(destination.price) : null }));
 });
 
@@ -66,7 +69,10 @@ router.patch("/destinations/:id", async (req, res): Promise<void> => {
 
   const [destination] = await db
     .update(destinationsTable)
-    .set(parsed.data)
+    .set({
+      ...parsed.data,
+      price: parsed.data.price != null ? String(parsed.data.price) : null,
+    })
     .where(eq(destinationsTable.id, params.data.id))
     .returning();
 
