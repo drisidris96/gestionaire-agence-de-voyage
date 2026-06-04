@@ -13,7 +13,8 @@ export interface Client {
   id: number;
   fullName: string;
   phone: string;
-  email: string;
+  /** @nullable */
+  email?: string | null;
   /** @nullable */
   address?: string | null;
   /** @nullable */
@@ -29,7 +30,8 @@ export interface Client {
 export interface CreateClientBody {
   fullName: string;
   phone: string;
-  email: string;
+  /** @nullable */
+  email?: string | null;
   /** @nullable */
   address?: string | null;
   /** @nullable */
