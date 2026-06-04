@@ -16,6 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 const clientSchema = z.object({
   fullName: z.string().min(2, "الاسم مطلوب"),
   phone: z.string().min(5, "رقم الهاتف مطلوب"),
-  email: z.string().email("البريد الإلكتروني غير صحيح").or(z.literal("")),
+  email: z.string().email("البريد الإلكتروني غير صحيح").or(z.literal("")).optional(),
   address: z.string().optional(),
   passportNumber: z.string().optional(),
   nationality: z.string().optional(),
@@ -37,6 +41,7 @@ export default function ClientsPage() {
   const { data: clients, isLoading } = useListClients({ search });
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<any>(null);
+  const [deletingClient, setDeletingClient] = useState<any>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -58,36 +63,50 @@ export default function ClientsPage() {
   });
 
   const onSubmit = (data: ClientFormValues) => {
+    const payload = {
+      ...data,
+      email: data.email && data.email.trim() !== "" ? data.email : null,
+    };
     if (editingClient) {
-      updateClient.mutate({ id: editingClient.id, data }, {
+      updateClient.mutate({ id: editingClient.id, data: payload as any }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
           toast({ title: "تم تحديث بيانات العميل بنجاح" });
           setIsAddOpen(false);
           setEditingClient(null);
+        },
+        onError: () => {
+          toast({ title: "حدث خطأ أثناء التحديث", variant: "destructive" });
         }
       });
     } else {
-      createClient.mutate({ data }, {
+      createClient.mutate({ data: payload as any }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
           toast({ title: "تمت إضافة العميل بنجاح" });
           setIsAddOpen(false);
           form.reset();
+        },
+        onError: () => {
+          toast({ title: "حدث خطأ أثناء الإضافة", variant: "destructive" });
         }
       });
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm("هل أنت متأكد من حذف هذا العميل؟")) {
-      deleteClient.mutate({ id }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          toast({ title: "تم حذف العميل" });
-        }
-      });
-    }
+  const handleDeleteConfirm = () => {
+    if (!deletingClient) return;
+    deleteClient.mutate({ id: deletingClient.id }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
+        toast({ title: "تم حذف العميل" });
+        setDeletingClient(null);
+      },
+      onError: () => {
+        toast({ title: "حدث خطأ أثناء الحذف", variant: "destructive" });
+        setDeletingClient(null);
+      }
+    });
   };
 
   const openEdit = (client: any) => {
@@ -204,6 +223,9 @@ export default function ClientsPage() {
                     )} />
                   </div>
                   <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => { setIsAddOpen(false); setEditingClient(null); form.reset(); }}>
+                      إلغاء
+                    </Button>
                     <Button type="submit" disabled={createClient.isPending || updateClient.isPending} data-testid="button-submit-client">
                       {editingClient ? "حفظ التغييرات" : "إنشاء العميل"}
                     </Button>
@@ -278,7 +300,10 @@ export default function ClientsPage() {
                         <DropdownMenuItem onClick={() => openEdit(client)} className="cursor-pointer">
                           <Pencil className="ml-2 h-4 w-4" /> تعديل
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(client.id)} className="text-destructive focus:text-destructive cursor-pointer">
+                        <DropdownMenuItem
+                          onClick={() => setDeletingClient(client)}
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                        >
                           <Trash className="ml-2 h-4 w-4" /> حذف
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -290,6 +315,30 @@ export default function ClientsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingClient} onOpenChange={(open) => { if (!open) setDeletingClient(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف العميل <span className="font-semibold text-foreground">"{deletingClient?.fullName}"</span>؟
+              <br />
+              سيتم حذف جميع بيانات هذا العميل ولا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteClient.isPending}
+            >
+              {deleteClient.isPending ? "جارٍ الحذف..." : "نعم، احذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
