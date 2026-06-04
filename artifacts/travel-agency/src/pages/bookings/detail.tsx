@@ -424,12 +424,36 @@ export default function BookingDetail() {
       <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
         <DialogContent dir="rtl">
           <DialogHeader><DialogTitle>تسجيل دفعة</DialogTitle></DialogHeader>
+          <div className="grid grid-cols-3 gap-3 bg-muted/40 rounded-lg p-3 text-sm">
+            <div className="text-center">
+              <div className="text-muted-foreground text-xs mb-1">الإجمالي</div>
+              <div className="font-bold">{booking.totalPrice.toLocaleString()} $</div>
+            </div>
+            <div className="text-center border-x">
+              <div className="text-muted-foreground text-xs mb-1">المدفوع</div>
+              <div className="font-bold text-green-600">{(booking.paidAmount || 0).toLocaleString()} $</div>
+            </div>
+            <div className="text-center">
+              <div className="text-muted-foreground text-xs mb-1">المتبقي</div>
+              <div className="font-bold text-orange-500">{remainingBalance.toLocaleString()} $</div>
+            </div>
+          </div>
           <Form {...paymentForm}>
             <form onSubmit={paymentForm.handleSubmit(handleAddPayment)} className="space-y-4">
               <FormField control={paymentForm.control} name="amount" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>المبلغ ($)</FormLabel>
-                  <FormControl><Input type="number" step="0.01" max={remainingBalance} {...field} data-testid="input-payment-amount" /></FormControl>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>المبلغ المدفوع ($)</FormLabel>
+                    <button type="button" className="text-xs text-primary underline" onClick={() => field.onChange(remainingBalance)}>
+                      دفع المبلغ كاملاً
+                    </button>
+                  </div>
+                  <FormControl><Input type="number" step="0.01" min={0.01} max={remainingBalance} {...field} data-testid="input-payment-amount" /></FormControl>
+                  {Number(field.value) > 0 && Number(field.value) < remainingBalance && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      سيتبقى بعد هذه الدفعة: <span className="font-semibold text-orange-500">{(remainingBalance - Number(field.value)).toLocaleString()} $</span>
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )} />

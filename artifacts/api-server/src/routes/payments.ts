@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, paymentsTable, bookingsTable, clientsTable } from "@workspace/db";
 import {
   ListPaymentsQueryParams,
@@ -46,11 +46,34 @@ router.post("/payments", async (req, res): Promise<void> => {
     return;
   }
 
+  const [booking] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, parsed.data.bookingId));
+  if (!booking) {
+    res.status(404).json({ error: "Booking not found" });
+    return;
+  }
+
+  const totalPrice = Number(booking.totalPrice);
+  const currentPaid = Number(booking.paidAmount ?? 0);
+  const remainingBalance = totalPrice - currentPaid;
+
+  if (parsed.data.amount > remainingBalance + 0.001) {
+    res.status(400).json({ error: `المبلغ المدخل (${parsed.data.amount}) يتجاوز المبلغ المتبقي (${remainingBalance.toFixed(2)})` });
+    return;
+  }
+
   const [payment] = await db.insert(paymentsTable).values({
     ...parsed.data,
     amount: String(parsed.data.amount),
     paymentDate: parsed.data.paymentDate ?? new Date(),
   }).returning();
+
+  await db
+    .update(bookingsTable)
+    .set({
+      paidAmount: sql`${bookingsTable.paidAmount} + ${String(parsed.data.amount)}`,
+      updatedAt: new Date(),
+    })
+    .where(eq(bookingsTable.id, parsed.data.bookingId));
 
   const enriched = await enrichPayment(payment);
   res.status(201).json(GetPaymentResponse.parse(enriched));
@@ -85,6 +108,14 @@ router.delete("/payments/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Payment not found" });
     return;
   }
+
+  await db
+    .update(bookingsTable)
+    .set({
+      paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} - ${String(payment.amount)})`,
+      updatedAt: new Date(),
+    })
+    .where(eq(bookingsTable.id, payment.bookingId));
 
   res.sendStatus(204);
 });
