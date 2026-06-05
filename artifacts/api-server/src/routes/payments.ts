@@ -15,11 +15,22 @@ const router: IRouter = Router();
 async function enrichPayment(p: typeof paymentsTable.$inferSelect) {
   const [booking] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, p.bookingId));
   let clientName: string | null = null;
+  let totalPrice = 0;
+  let paidAmount = 0;
   if (booking) {
     const [client] = await db.select().from(clientsTable).where(eq(clientsTable.id, booking.clientId));
     clientName = client?.fullName ?? null;
+    totalPrice = Number(booking.totalPrice);
+    paidAmount = Number(booking.paidAmount ?? 0);
   }
-  return { ...p, amount: Number(p.amount), clientName };
+  return {
+    ...p,
+    amount: Number(p.amount),
+    clientName,
+    totalPrice,
+    paidAmount,
+    remainingAmount: totalPrice - paidAmount,
+  };
 }
 
 router.get("/payments", async (req, res): Promise<void> => {

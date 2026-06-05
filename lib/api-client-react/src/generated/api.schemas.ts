@@ -262,6 +262,9 @@ export interface Payment {
   /** @nullable */
   clientName?: string | null;
   amount: number;
+  totalPrice?: number;
+  paidAmount?: number;
+  remainingAmount?: number;
   paymentDate: string;
   method: PaymentMethod;
   /** @nullable */

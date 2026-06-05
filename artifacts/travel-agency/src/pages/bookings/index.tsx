@@ -184,6 +184,8 @@ export default function BookingsPage() {
               <TableHead>نوع الحجز</TableHead>
               <TableHead>تاريخ السفر</TableHead>
               <TableHead>الإجمالي</TableHead>
+              <TableHead>المدفوع</TableHead>
+              <TableHead>المتبقي</TableHead>
               <TableHead>الحالة</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -224,6 +226,12 @@ export default function BookingsPage() {
                     </TableCell>
                     <TableCell className="font-semibold text-primary">
                       {booking.totalPrice.toLocaleString()} $
+                    </TableCell>
+                    <TableCell className="font-semibold text-green-600">
+                      {(booking.paidAmount ?? 0).toLocaleString()} $
+                    </TableCell>
+                    <TableCell className={`font-semibold ${(booking.totalPrice - (booking.paidAmount ?? 0)) > 0 ? "text-amber-600" : "text-green-600"}`}>
+                      {(booking.totalPrice - (booking.paidAmount ?? 0)).toLocaleString()} $
                     </TableCell>
                     <TableCell>
                       <Badge variant={STATUS_VARIANT[booking.status] ?? "outline"} data-testid={`status-booking-${booking.id}`}>

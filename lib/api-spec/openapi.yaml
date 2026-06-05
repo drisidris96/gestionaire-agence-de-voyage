@@ -1613,6 +1613,12 @@ components:
           type: ["string", "null"]
         amount:
           type: number
+        totalPrice:
+          type: number
+        paidAmount:
+          type: number
+        remainingAmount:
+          type: number
         paymentDate:
           type: string
           format: date-time
