@@ -40,6 +40,7 @@ export default function ClientsPage() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<any>(null);
   const [deletingClient, setDeletingClient] = useState<any>(null);
+  const [addedClientName, setAddedClientName] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -80,8 +81,8 @@ export default function ClientsPage() {
       createClient.mutate({ data: payload as any }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
-          toast({ title: "تمت إضافة العميل بنجاح" });
           setIsAddOpen(false);
+          setAddedClientName(payload.fullName);
           form.reset();
         },
         onError: () => {
@@ -304,6 +305,30 @@ export default function ClientsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Success Dialog */}
+      <AlertDialog open={!!addedClientName} onOpenChange={(open) => { if (!open) setAddedClientName(null); }}>
+        <AlertDialogContent className="text-center">
+          <AlertDialogHeader>
+            <div className="flex justify-center mb-2">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <AlertDialogTitle className="text-xl">تمت الإضافة بنجاح!</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              تمت إضافة العميل <span className="font-semibold text-foreground">"{addedClientName}"</span> بنجاح إلى قاعدة البيانات.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="justify-center">
+            <AlertDialogAction onClick={() => setAddedClientName(null)} className="bg-green-600 hover:bg-green-700 text-white px-8">
+              حسناً
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingClient} onOpenChange={(open) => { if (!open) setDeletingClient(null); }}>
