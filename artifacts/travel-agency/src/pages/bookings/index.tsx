@@ -383,6 +383,31 @@ export default function BookingsPage() {
                   </FormItem>
                 )} />
 
+                {/* Financial Summary */}
+                {(() => {
+                  const total = Number(form.watch("totalPrice")) || 0;
+                  const paid = Number(editingBooking?.paidAmount ?? 0);
+                  const remaining = total - paid;
+                  return (
+                    <div className="col-span-2 grid grid-cols-3 gap-3 rounded-lg border bg-muted/30 p-3">
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground mb-1">المبلغ الكلي</p>
+                        <p className="text-lg font-bold text-primary">{total.toLocaleString()} $</p>
+                      </div>
+                      <div className="text-center border-x">
+                        <p className="text-xs text-muted-foreground mb-1">المبلغ المدفوع</p>
+                        <p className="text-lg font-bold text-green-600">{paid.toLocaleString()} $</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground mb-1">المبلغ المتبقي</p>
+                        <p className={`text-lg font-bold ${remaining > 0 ? "text-amber-600" : "text-green-600"}`}>
+                          {remaining.toLocaleString()} $
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <FormField control={form.control} name="status" render={({ field }) => (
                   <FormItem className="col-span-2">
                     <FormLabel>الحالة</FormLabel>
