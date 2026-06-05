@@ -146,6 +146,7 @@ export const BookingBookingType = {
   hotel: "hotel",
   flight: "flight",
   hotel_flight: "hotel_flight",
+  other: "other",
 } as const;
 
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus];
@@ -162,12 +163,15 @@ export interface Booking {
   clientId: number;
   /** @nullable */
   clientName?: string | null;
-  packageId: number;
+  /** @nullable */
+  packageId?: number | null;
   /** @nullable */
   packageName?: string | null;
   /** @nullable */
   destinationName?: string | null;
   bookingType?: BookingBookingType;
+  /** @nullable */
+  customBookingType?: string | null;
   travelDate: string;
   /** @nullable */
   returnDate?: string | null;
@@ -188,6 +192,7 @@ export const CreateBookingBodyBookingType = {
   hotel: "hotel",
   flight: "flight",
   hotel_flight: "hotel_flight",
+  other: "other",
 } as const;
 
 export type CreateBookingBodyStatus =
@@ -202,13 +207,17 @@ export const CreateBookingBodyStatus = {
 
 export interface CreateBookingBody {
   clientId: number;
-  packageId: number;
+  /** @nullable */
+  packageId?: number | null;
   bookingType?: CreateBookingBodyBookingType;
+  /** @nullable */
+  customBookingType?: string | null;
   travelDate: string;
   /** @nullable */
   returnDate?: string | null;
   numberOfPersons: number;
   totalPrice: number;
+  initialPaidAmount?: number;
   status?: CreateBookingBodyStatus;
   /** @nullable */
   notes?: string | null;
@@ -221,6 +230,7 @@ export const UpdateBookingBodyBookingType = {
   hotel: "hotel",
   flight: "flight",
   hotel_flight: "hotel_flight",
+  other: "other",
 } as const;
 
 export type UpdateBookingBodyStatus =
@@ -235,8 +245,11 @@ export const UpdateBookingBodyStatus = {
 
 export interface UpdateBookingBody {
   clientId?: number;
-  packageId?: number;
+  /** @nullable */
+  packageId?: number | null;
   bookingType?: UpdateBookingBodyBookingType;
+  /** @nullable */
+  customBookingType?: string | null;
   travelDate?: string;
   /** @nullable */
   returnDate?: string | null;

@@ -46,10 +46,14 @@ router.get("/dashboard/recent-bookings", async (_req, res): Promise<void> => {
 
   const enriched = await Promise.all(bookings.map(async (b) => {
     const [clientRow] = await db.select({ fullName: clientsTable.fullName }).from(clientsTable).where(eq(clientsTable.id, b.clientId));
-    const [pkgRow] = await db.select({ name: packagesTable.name, destinationId: packagesTable.destinationId }).from(packagesTable).where(eq(packagesTable.id, b.packageId));
+    let pkgRow: { name: string; destinationId: number | null } | undefined;
+    if (b.packageId != null) {
+      [pkgRow] = await db.select({ name: packagesTable.name, destinationId: packagesTable.destinationId }).from(packagesTable).where(eq(packagesTable.id, b.packageId as number));
+    }
     let destName: string | null = null;
-    if (pkgRow?.destinationId) {
-      const [destRow] = await db.select({ name: destinationsTable.name }).from(destinationsTable).where(eq(destinationsTable.id, pkgRow.destinationId));
+    if (pkgRow?.destinationId != null) {
+      const destId = pkgRow.destinationId as number;
+      const [destRow] = await db.select({ name: destinationsTable.name }).from(destinationsTable).where(eq(destinationsTable.id, destId));
       destName = destRow?.name ?? null;
     }
     const [paidRow] = await db.select({ total: sql<string>`COALESCE(SUM(amount), 0)` }).from(paymentsTable).where(eq(paymentsTable.bookingId, b.id));

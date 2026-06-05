@@ -18,15 +18,20 @@ const router: IRouter = Router();
 
 async function enrichBooking(b: typeof bookingsTable.$inferSelect) {
   const [client] = await db.select().from(clientsTable).where(eq(clientsTable.id, b.clientId));
-  const [pkg] = await db.select({
-    name: packagesTable.name,
-    destinationId: packagesTable.destinationId,
-  }).from(packagesTable).where(eq(packagesTable.id, b.packageId));
 
+  let packageName: string | null = null;
   let destinationName: string | null = null;
-  if (pkg?.destinationId) {
-    const [dest] = await db.select().from(destinationsTable).where(eq(destinationsTable.id, pkg.destinationId));
-    destinationName = dest?.name ?? null;
+  if (b.packageId != null) {
+    const [pkg] = await db.select({
+      name: packagesTable.name,
+      destinationId: packagesTable.destinationId,
+    }).from(packagesTable).where(eq(packagesTable.id, b.packageId as number));
+    packageName = pkg?.name ?? null;
+    if (pkg?.destinationId != null) {
+      const destId = pkg.destinationId as number;
+      const [dest] = await db.select().from(destinationsTable).where(eq(destinationsTable.id, destId));
+      destinationName = dest?.name ?? null;
+    }
   }
 
   const payments = await db.select({ total: sql<string>`COALESCE(SUM(amount), 0)` })
@@ -36,7 +41,7 @@ async function enrichBooking(b: typeof bookingsTable.$inferSelect) {
   return {
     ...b,
     clientName: client?.fullName ?? null,
-    packageName: pkg?.name ?? null,
+    packageName,
     destinationName,
     totalPrice: Number(b.totalPrice),
     paidAmount: Number(payments[0]?.total ?? 0),
@@ -70,11 +75,26 @@ router.post("/bookings", async (req, res): Promise<void> => {
     return;
   }
 
+  const { initialPaidAmount, ...bookingData } = parsed.data;
+
   const [booking] = await db.insert(bookingsTable).values({
-    ...parsed.data,
-    totalPrice: String(parsed.data.totalPrice),
-    status: parsed.data.status ?? "pending",
+    ...bookingData,
+    packageId: bookingData.packageId ?? null,
+    totalPrice: String(bookingData.totalPrice),
+    status: bookingData.status ?? "pending",
   }).returning();
+
+  if (initialPaidAmount && initialPaidAmount > 0) {
+    await db.insert(paymentsTable).values({
+      bookingId: booking.id,
+      amount: String(initialPaidAmount),
+      method: "cash",
+      paymentDate: new Date(),
+    });
+    await db.update(bookingsTable).set({
+      paidAmount: sql`${bookingsTable.paidAmount} + ${String(initialPaidAmount)}`,
+    }).where(eq(bookingsTable.id, booking.id));
+  }
 
   const enriched = await enrichBooking(booking);
   res.status(201).json(GetBookingResponse.parse(enriched));

@@ -35,16 +35,19 @@ const BOOKING_TYPE_AR: Record<string, { label: string; icon: any }> = {
   hotel:        { label: "فندقي",          icon: Hotel },
   flight:       { label: "طيران",           icon: Plane },
   hotel_flight: { label: "فندق + طيران",   icon: Building2 },
+  other:        { label: "حجوزات أخرى",    icon: MoreHorizontal },
 };
 
 const bookingSchema = z.object({
   clientId: z.coerce.number().min(1, "العميل مطلوب"),
-  packageId: z.coerce.number().min(1, "الباقة مطلوبة"),
-  bookingType: z.enum(["hotel", "flight", "hotel_flight"]).default("flight"),
+  packageId: z.coerce.number().optional().nullable(),
+  bookingType: z.enum(["hotel", "flight", "hotel_flight", "other"]).default("flight"),
+  customBookingType: z.string().optional(),
   travelDate: z.string().min(1, "تاريخ السفر مطلوب"),
   returnDate: z.string().optional(),
   numberOfPersons: z.coerce.number().min(1, "يجب أن يكون شخص واحد على الأقل"),
   totalPrice: z.coerce.number().min(0, "السعر الإجمالي يجب أن يكون صحيحًا"),
+  initialPaidAmount: z.coerce.number().min(0).optional(),
   status: z.enum(["pending", "confirmed", "cancelled", "completed"]).default("pending"),
   notes: z.string().optional(),
 });
@@ -80,8 +83,9 @@ export default function BookingsPage() {
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      clientId: 0, packageId: 0, bookingType: "flight", travelDate: "", returnDate: "",
-      numberOfPersons: 1, totalPrice: 0, status: "pending", notes: "",
+      clientId: 0, packageId: null, bookingType: "flight", customBookingType: "",
+      travelDate: "", returnDate: "", numberOfPersons: 1, totalPrice: 0,
+      initialPaidAmount: 0, status: "pending", notes: "",
     },
   });
 
@@ -95,12 +99,14 @@ export default function BookingsPage() {
     setEditingBooking(booking);
     form.reset({
       clientId: booking.clientId,
-      packageId: booking.packageId,
+      packageId: booking.packageId ?? null,
       bookingType: booking.bookingType ?? "flight",
+      customBookingType: booking.customBookingType || "",
       travelDate: booking.travelDate.split("T")[0],
       returnDate: booking.returnDate ? booking.returnDate.split("T")[0] : "",
       numberOfPersons: booking.numberOfPersons,
       totalPrice: booking.totalPrice,
+      initialPaidAmount: 0,
       status: booking.status,
       notes: booking.notes || "",
     });
@@ -305,14 +311,18 @@ export default function BookingsPage() {
 
                 <FormField control={form.control} name="packageId" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>الباقة *</FormLabel>
+                    <FormLabel>الباقة (اختياري)</FormLabel>
                     <Select onValueChange={(val) => {
+                      if (val === "none") { field.onChange(null); return; }
                       field.onChange(val);
                       const pkg = packages?.find(p => p.id.toString() === val);
                       if (pkg) form.setValue("totalPrice", pkg.pricePerPerson * (form.getValues("numberOfPersons") || 1));
-                    }} value={field.value ? field.value.toString() : undefined}>
-                      <FormControl><SelectTrigger data-testid="select-package"><SelectValue placeholder="اختر الباقة" /></SelectTrigger></FormControl>
-                      <SelectContent>{packages?.map(p => <SelectItem key={p.id} value={p.id.toString()}>{p.name} - {p.pricePerPerson}$/مسافر</SelectItem>)}</SelectContent>
+                    }} value={field.value ? field.value.toString() : "none"}>
+                      <FormControl><SelectTrigger data-testid="select-package"><SelectValue placeholder="بدون باقة" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">— بدون باقة —</SelectItem>
+                        {packages?.map(p => <SelectItem key={p.id} value={p.id.toString()}>{p.name} - {p.pricePerPerson}$/مسافر</SelectItem>)}
+                      </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
@@ -322,8 +332,8 @@ export default function BookingsPage() {
                 <FormField control={form.control} name="bookingType" render={({ field }) => (
                   <FormItem className="col-span-2">
                     <FormLabel>نوع الحجز *</FormLabel>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(["hotel", "flight", "hotel_flight"] as const).map((type) => {
+                    <div className="grid grid-cols-4 gap-3">
+                      {(["hotel", "flight", "hotel_flight", "other"] as const).map((type) => {
                         const info = BOOKING_TYPE_AR[type];
                         const Icon = info.icon;
                         const active = field.value === type;
@@ -340,6 +350,16 @@ export default function BookingsPage() {
                         );
                       })}
                     </div>
+                    {field.value === "other" && (
+                      <FormField control={form.control} name="customBookingType" render={({ field: cf }) => (
+                        <FormItem className="mt-2">
+                          <FormControl>
+                            <Input {...cf} placeholder="أدخل نوع الحجز (مثال: تأشيرة، نقل، إقامة...)" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    )}
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -383,13 +403,25 @@ export default function BookingsPage() {
                   </FormItem>
                 )} />
 
+                {!editingBooking && (
+                  <FormField control={form.control} name="initialPaidAmount" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>المبلغ المدفوع ($)</FormLabel>
+                      <FormControl><Input type="number" step="0.01" min="0" {...field} placeholder="0" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
+
                 {/* Financial Summary */}
                 {(() => {
                   const total = Number(form.watch("totalPrice")) || 0;
-                  const paid = Number(editingBooking?.paidAmount ?? 0);
+                  const paid = editingBooking
+                    ? Number(editingBooking.paidAmount ?? 0)
+                    : Number(form.watch("initialPaidAmount") ?? 0);
                   const remaining = total - paid;
                   return (
-                    <div className="col-span-2 grid grid-cols-3 gap-3 rounded-lg border bg-muted/30 p-3">
+                    <div className={`${editingBooking ? "col-span-2" : "col-span-2"} grid grid-cols-3 gap-3 rounded-lg border bg-muted/30 p-3`}>
                       <div className="text-center">
                         <p className="text-xs text-muted-foreground mb-1">المبلغ الكلي</p>
                         <p className="text-lg font-bold text-primary">{total.toLocaleString()} $</p>

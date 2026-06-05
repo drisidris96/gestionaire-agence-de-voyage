@@ -291,10 +291,13 @@ export const ListBookingsResponseItem = zod.object({
   id: zod.number(),
   clientId: zod.number(),
   clientName: zod.string().nullish(),
-  packageId: zod.number(),
+  packageId: zod.number().nullish(),
   packageName: zod.string().nullish(),
   destinationName: zod.string().nullish(),
-  bookingType: zod.enum(["hotel", "flight", "hotel_flight"]).optional(),
+  bookingType: zod
+    .enum(["hotel", "flight", "hotel_flight", "other"])
+    .optional(),
+  customBookingType: zod.string().nullish(),
   travelDate: zod.coerce.date(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
@@ -312,12 +315,16 @@ export const ListBookingsResponse = zod.array(ListBookingsResponseItem);
  */
 export const CreateBookingBody = zod.object({
   clientId: zod.number(),
-  packageId: zod.number(),
-  bookingType: zod.enum(["hotel", "flight", "hotel_flight"]).optional(),
+  packageId: zod.number().nullish(),
+  bookingType: zod
+    .enum(["hotel", "flight", "hotel_flight", "other"])
+    .optional(),
+  customBookingType: zod.string().nullish(),
   travelDate: zod.coerce.date(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
+  initialPaidAmount: zod.number().optional(),
   status: zod
     .enum(["pending", "confirmed", "cancelled", "completed"])
     .optional(),
@@ -335,10 +342,13 @@ export const GetBookingResponse = zod.object({
   id: zod.number(),
   clientId: zod.number(),
   clientName: zod.string().nullish(),
-  packageId: zod.number(),
+  packageId: zod.number().nullish(),
   packageName: zod.string().nullish(),
   destinationName: zod.string().nullish(),
-  bookingType: zod.enum(["hotel", "flight", "hotel_flight"]).optional(),
+  bookingType: zod
+    .enum(["hotel", "flight", "hotel_flight", "other"])
+    .optional(),
+  customBookingType: zod.string().nullish(),
   travelDate: zod.coerce.date(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
@@ -359,8 +369,11 @@ export const UpdateBookingParams = zod.object({
 
 export const UpdateBookingBody = zod.object({
   clientId: zod.number().optional(),
-  packageId: zod.number().optional(),
-  bookingType: zod.enum(["hotel", "flight", "hotel_flight"]).optional(),
+  packageId: zod.number().nullish(),
+  bookingType: zod
+    .enum(["hotel", "flight", "hotel_flight", "other"])
+    .optional(),
+  customBookingType: zod.string().nullish(),
   travelDate: zod.coerce.date().optional(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number().optional(),
@@ -375,10 +388,13 @@ export const UpdateBookingResponse = zod.object({
   id: zod.number(),
   clientId: zod.number(),
   clientName: zod.string().nullish(),
-  packageId: zod.number(),
+  packageId: zod.number().nullish(),
   packageName: zod.string().nullish(),
   destinationName: zod.string().nullish(),
-  bookingType: zod.enum(["hotel", "flight", "hotel_flight"]).optional(),
+  bookingType: zod
+    .enum(["hotel", "flight", "hotel_flight", "other"])
+    .optional(),
+  customBookingType: zod.string().nullish(),
   travelDate: zod.coerce.date(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
@@ -480,10 +496,13 @@ export const GetRecentBookingsResponseItem = zod.object({
   id: zod.number(),
   clientId: zod.number(),
   clientName: zod.string().nullish(),
-  packageId: zod.number(),
+  packageId: zod.number().nullish(),
   packageName: zod.string().nullish(),
   destinationName: zod.string().nullish(),
-  bookingType: zod.enum(["hotel", "flight", "hotel_flight"]).optional(),
+  bookingType: zod
+    .enum(["hotel", "flight", "hotel_flight", "other"])
+    .optional(),
+  customBookingType: zod.string().nullish(),
   travelDate: zod.coerce.date(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),

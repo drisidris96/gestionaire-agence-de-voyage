@@ -103,7 +103,7 @@ export default function BookingDetail() {
     if (!booking) return;
     editForm.reset({
       clientId: booking.clientId,
-      packageId: booking.packageId,
+      packageId: booking.packageId ?? undefined,
       bookingType: (booking.bookingType as any) ?? "flight",
       travelDate: booking.travelDate.split("T")[0],
       returnDate: booking.returnDate ? booking.returnDate.split("T")[0] : "",
