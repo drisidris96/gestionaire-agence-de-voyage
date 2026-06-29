@@ -1,10 +1,11 @@
-import { useGetDashboardStats, useGetRecentBookings, useGetRevenueByMonth, useGetBookingsByStatus } from "@workspace/api-client-react";
+import { useGetDashboardStats, useGetRecentBookings, useGetRevenueByMonth, useGetBookingsByStatus, useListPayroll } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpenCheck, CreditCard, Package } from "lucide-react";
+import { Users, BookOpenCheck, CreditCard, Package, Banknote, AlertTriangle, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useAgency } from "@/hooks/use-agency";
 import {
   BarChart,
   Bar,
@@ -35,6 +36,68 @@ const STATUS_VARIANT: Record<string, string> = {
   completed: "outline",
 };
 
+function PayrollBanner() {
+  const { settings } = useAgency();
+  const { data: payrollRecords } = useListPayroll({});
+
+  const payDay = settings.payrollDay;
+  if (!payDay) return null;
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  const dueThisMonth = new Date(year, month, payDay);
+  const isPastThisMonth = dueThisMonth < today;
+  const dueDate = isPastThisMonth ? new Date(year, month + 1, payDay) : dueThisMonth;
+
+  const daysLeft = Math.ceil((dueDate.getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000);
+  const isToday = daysLeft === 0;
+  const isOverdue = isPastThisMonth;
+
+  const currentMonthPaid = payrollRecords?.some(
+    r => r.month === month + 1 && r.year === year && r.status === "paid"
+  );
+
+  if (currentMonthPaid && !isOverdue) return null;
+  if (!isToday && daysLeft > 3 && !isOverdue) return null;
+
+  const dd = String(dueDate.getDate()).padStart(2, "0");
+  const mm = String(dueDate.getMonth() + 1).padStart(2, "0");
+  const yyyy = dueDate.getFullYear();
+
+  if (isOverdue && !currentMonthPaid) {
+    return (
+      <Link href="/employees">
+        <div className="flex items-center gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 cursor-pointer hover:bg-red-100 transition-colors">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-red-600" />
+          <div className="flex-1">
+            <span className="font-bold">⚠️ رواتب الشهر لم تُصرف بعد!</span>
+            <span className="mr-2 text-red-600">كان موعد الصرف {`${dd}-${mm}-${yyyy}`} — اضغط للانتقال لصفحة الموظفين</span>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href="/employees">
+      <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm cursor-pointer hover:opacity-90 transition-colors ${isToday ? "bg-red-50 border-red-200 text-red-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+        <Banknote className="h-5 w-5 shrink-0" />
+        <div className="flex-1">
+          <span className="font-semibold">موعد صرف الرواتب: </span>
+          <span className="font-bold">{`${dd}-${mm}-${yyyy}`}</span>
+          {isToday
+            ? <span className="mr-2 font-bold text-red-600"> — اليوم!</span>
+            : <span className="mr-2">{` (بعد ${daysLeft} ${daysLeft === 1 ? "يوم" : "أيام"})`}</span>
+          }
+          {currentMonthPaid && <span className="mr-2 text-green-600 font-semibold flex-inline items-center gap-1">✓ تم الصرف هذا الشهر</span>}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: recentBookings, isLoading: recentLoading } = useGetRecentBookings();
@@ -49,6 +112,8 @@ export default function Dashboard() {
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">لوحة القيادة</h1>
         <p className="text-muted-foreground mt-1">نظرة عامة على أداء وكالتك السياحية.</p>
       </div>
+
+      <PayrollBanner />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title="إجمالي العملاء" value={stats?.totalClients} icon={Users} loading={statsLoading} />
