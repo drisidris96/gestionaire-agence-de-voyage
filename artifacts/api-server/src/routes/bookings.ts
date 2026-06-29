@@ -44,6 +44,7 @@ async function enrichBooking(b: typeof bookingsTable.$inferSelect) {
     packageName,
     destinationName,
     totalPrice: Number(b.totalPrice),
+    serviceCost: Number(b.serviceCost ?? 0),
     paidAmount: Number(payments[0]?.total ?? 0),
   };
 }
@@ -81,6 +82,7 @@ router.post("/bookings", async (req, res): Promise<void> => {
     ...bookingData,
     packageId: bookingData.packageId ?? null,
     totalPrice: String(bookingData.totalPrice),
+    serviceCost: String(bookingData.serviceCost ?? 0),
     status: bookingData.status ?? "pending",
   }).returning();
 
@@ -133,6 +135,9 @@ router.patch("/bookings/:id", async (req, res): Promise<void> => {
   const updateData: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
   if (parsed.data.totalPrice !== undefined) {
     updateData.totalPrice = String(parsed.data.totalPrice);
+  }
+  if (parsed.data.serviceCost !== undefined) {
+    updateData.serviceCost = String(parsed.data.serviceCost);
   }
 
   const [booking] = await db

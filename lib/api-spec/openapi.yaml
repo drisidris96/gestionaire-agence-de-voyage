@@ -1535,6 +1535,8 @@ components:
           type: integer
         totalPrice:
           type: number
+        serviceCost:
+          type: number
         paidAmount:
           type: number
         status:
@@ -1572,6 +1574,8 @@ components:
           type: integer
         totalPrice:
           type: number
+        serviceCost:
+          type: number
         initialPaidAmount:
           type: number
         status:
@@ -1601,6 +1605,8 @@ components:
         numberOfPersons:
           type: integer
         totalPrice:
+          type: number
+        serviceCost:
           type: number
         status:
           type: string

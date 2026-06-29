@@ -47,6 +47,7 @@ const bookingSchema = z.object({
   returnDate: z.string().optional(),
   numberOfPersons: z.coerce.number().min(1, "يجب أن يكون شخص واحد على الأقل"),
   totalPrice: z.coerce.number().min(0, "السعر الإجمالي يجب أن يكون صحيحًا"),
+  serviceCost: z.coerce.number().min(0).optional(),
   initialPaidAmount: z.coerce.number().min(0).optional(),
   status: z.enum(["pending", "confirmed", "cancelled", "completed"]).default("pending"),
   notes: z.string().optional(),
@@ -85,7 +86,7 @@ export default function BookingsPage() {
     defaultValues: {
       clientId: 0, packageId: null, bookingType: "flight", customBookingType: "",
       travelDate: "", returnDate: "", numberOfPersons: 1, totalPrice: 0,
-      initialPaidAmount: 0, status: "pending", notes: "",
+      serviceCost: 0, initialPaidAmount: 0, status: "pending", notes: "",
     },
   });
 
@@ -106,6 +107,7 @@ export default function BookingsPage() {
       returnDate: booking.returnDate ? booking.returnDate.split("T")[0] : "",
       numberOfPersons: booking.numberOfPersons,
       totalPrice: booking.totalPrice,
+      serviceCost: booking.serviceCost ?? 0,
       initialPaidAmount: 0,
       status: booking.status,
       notes: booking.notes || "",
@@ -399,6 +401,14 @@ export default function BookingsPage() {
                   <FormItem>
                     <FormLabel>السعر الإجمالي ($) *</FormLabel>
                     <FormControl><Input type="number" step="0.01" min="0" {...field} data-testid="input-total-price" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="serviceCost" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>سعر الخدمة / التكلفة ($)</FormLabel>
+                    <FormControl><Input type="number" step="0.01" min="0" {...field} placeholder="0" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />

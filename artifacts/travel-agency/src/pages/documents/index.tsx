@@ -76,9 +76,22 @@ function AgencyFooter({ agency }: { agency: { agencyName: string; agencyNameEn: 
   );
 }
 
+const BOOKING_TYPE_AR: Record<string, string> = {
+  hotel: "فندقي",
+  flight: "طيران",
+  hotel_flight: "فندق + طيران",
+  other: "أخرى",
+};
+
 function InvoiceDoc({ booking, agency }: { booking: any; agency: any }) {
   const paidAmount = booking.paidAmount ?? 0;
   const remaining = booking.totalPrice - paidAmount;
+  const serviceCost = Number(booking.serviceCost ?? 0);
+  const profit = booking.totalPrice - serviceCost;
+  const bookingTypeLabel = booking.bookingType === "other"
+    ? (booking.customBookingType || "أخرى")
+    : (BOOKING_TYPE_AR[booking.bookingType] ?? booking.bookingType ?? "—");
+
   return (
     <PrintArea>
       <AgencyHeader docType="فـاتـورة" docNumber={`INV-${String(booking.id).padStart(4, "0")}`} agency={agency} />
@@ -100,32 +113,34 @@ function InvoiceDoc({ booking, agency }: { booking: any; agency: any }) {
         </thead>
         <tbody>
           <tr className="border-b border-gray-200">
-            <td className="p-2.5 font-medium">الباقة السياحية</td>
-            <td className="p-2.5 text-center text-gray-600">{booking.packageName}</td>
+            <td className="p-2.5 font-medium">نوع الحجز</td>
+            <td className="p-2.5 text-center text-gray-600">{bookingTypeLabel}</td>
             <td className="p-2.5 text-center">—</td>
           </tr>
-          <tr className="border-b border-gray-200 bg-gray-50/50">
-            <td className="p-2.5 font-medium">الوجهة</td>
-            <td className="p-2.5 text-center text-gray-600">{booking.destinationName ?? "—"}</td>
-            <td className="p-2.5 text-center">—</td>
-          </tr>
+          {booking.travelDate && (
+            <tr className="border-b border-gray-200 bg-gray-50/50">
+              <td className="p-2.5 font-medium">تاريخ السفر</td>
+              <td className="p-2.5 text-center text-gray-600">
+                {format(new Date(booking.travelDate), "d MMMM yyyy", { locale: ar })}
+                {booking.returnDate && ` ← ${format(new Date(booking.returnDate), "d MMMM yyyy", { locale: ar })}`}
+              </td>
+              <td className="p-2.5 text-center">—</td>
+            </tr>
+          )}
           <tr className="border-b border-gray-200">
-            <td className="p-2.5 font-medium">تاريخ السفر</td>
-            <td className="p-2.5 text-center text-gray-600">
-              {format(new Date(booking.travelDate), "d MMMM yyyy", { locale: ar })}
-              {booking.returnDate && ` ← ${format(new Date(booking.returnDate), "d MMMM yyyy", { locale: ar })}`}
-            </td>
-            <td className="p-2.5 text-center">—</td>
-          </tr>
-          <tr className="border-b border-gray-200 bg-gray-50/50">
             <td className="p-2.5 font-medium">عدد المسافرين</td>
             <td className="p-2.5 text-center text-gray-600">{booking.numberOfPersons} أشخاص</td>
             <td className="p-2.5 text-center">—</td>
           </tr>
+          <tr className="border-b border-gray-200 bg-gray-50/50">
+            <td className="p-2.5 font-medium">سعر الخدمة</td>
+            <td className="p-2.5 text-center text-gray-600">التكلفة الإجمالية للخدمة</td>
+            <td className="p-2.5 text-center font-medium text-red-600">{serviceCost > 0 ? `${serviceCost.toLocaleString()} $` : "—"}</td>
+          </tr>
           <tr className="border-b border-gray-200">
-            <td className="p-2.5 font-medium">حالة الحجز</td>
-            <td className="p-2.5 text-center text-gray-600">{statusAr(booking.status)}</td>
-            <td className="p-2.5 text-center">—</td>
+            <td className="p-2.5 font-bold">المدخول الإجمالي</td>
+            <td className="p-2.5 text-center text-gray-500 text-xs">الإجمالي − سعر الخدمة</td>
+            <td className="p-2.5 text-center font-bold" style={{ color: "#16a34a" }}>{profit.toLocaleString()} $</td>
           </tr>
           <tr style={{ backgroundColor: "#C9A22710" }}>
             <td className="p-2.5 font-bold" colSpan={2}>الإجمالي الكلي</td>

@@ -12,6 +12,7 @@ export const bookingsTable = pgTable("bookings", {
   returnDate: timestamp("return_date", { withTimezone: true }),
   numberOfPersons: integer("number_of_persons").notNull().default(1),
   totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
+  serviceCost: numeric("service_cost", { precision: 10, scale: 2 }).notNull().default("0"),
   paidAmount: numeric("paid_amount", { precision: 10, scale: 2 }).notNull().default("0"),
   status: text("status").notNull().default("pending"),
   notes: text("notes"),
