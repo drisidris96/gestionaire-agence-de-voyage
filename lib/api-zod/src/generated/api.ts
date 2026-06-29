@@ -574,6 +574,10 @@ export const GetSettingsResponse = zod.object({
   agencyPhone: zod.string().nullish(),
   agencyEmail: zod.string().nullish(),
   agencyAddress: zod.string().nullish(),
+  payrollDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when salaries are due (1-31)"),
 });
 
 /**
@@ -586,6 +590,10 @@ export const UpdateSettingsBody = zod.object({
   agencyPhone: zod.string().nullish(),
   agencyEmail: zod.string().nullish(),
   agencyAddress: zod.string().nullish(),
+  payrollDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when salaries are due (1-31)"),
 });
 
 export const UpdateSettingsResponse = zod.object({
@@ -595,6 +603,10 @@ export const UpdateSettingsResponse = zod.object({
   agencyPhone: zod.string().nullish(),
   agencyEmail: zod.string().nullish(),
   agencyAddress: zod.string().nullish(),
+  payrollDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when salaries are due (1-31)"),
 });
 
 /**

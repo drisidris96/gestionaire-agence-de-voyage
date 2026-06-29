@@ -250,6 +250,37 @@ export default function EmployeesPage() {
           </div>
         </div>
 
+        {(() => {
+          const payDay = agency.payrollDay;
+          if (!payDay) return null;
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = today.getMonth();
+          const dueThisMonth = new Date(year, month, payDay);
+          const dueDate = dueThisMonth < today
+            ? new Date(year, month + 1, payDay)
+            : dueThisMonth;
+          const dd = String(dueDate.getDate()).padStart(2, "0");
+          const mm = String(dueDate.getMonth() + 1).padStart(2, "0");
+          const yyyy = dueDate.getFullYear();
+          const daysLeft = Math.ceil((dueDate.getTime() - today.setHours(0,0,0,0)) / 86400000);
+          const isToday = daysLeft === 0;
+          const isUrgent = daysLeft <= 3;
+          return (
+            <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm ${isToday ? "bg-red-50 border-red-200 text-red-800" : isUrgent ? "bg-amber-50 border-amber-200 text-amber-800" : "bg-blue-50 border-blue-200 text-blue-800"}`}>
+              <Banknote className="h-5 w-5 shrink-0" />
+              <div className="flex-1">
+                <span className="font-semibold">موعد صرف الرواتب: </span>
+                <span className="font-bold">{`${dd}-${mm}-${yyyy}`}</span>
+                {isToday
+                  ? <span className="mr-2 font-bold text-red-600">— اليوم!</span>
+                  : <span className="mr-2 text-muted-foreground">{` (بعد ${daysLeft} ${daysLeft === 1 ? "يوم" : "أيام"})`}</span>
+                }
+              </div>
+            </div>
+          );
+        })()}
+
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <TabsList className="mb-4">
             <TabsTrigger value="employees" className="gap-2"><Users className="h-4 w-4" /> الموظفون</TabsTrigger>

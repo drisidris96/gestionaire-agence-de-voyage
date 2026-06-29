@@ -354,6 +354,11 @@ export interface AgencySettings {
   agencyEmail?: string | null;
   /** @nullable */
   agencyAddress?: string | null;
+  /**
+   * Day of month when salaries are due (1-31)
+   * @nullable
+   */
+  payrollDay?: number | null;
 }
 
 export interface UpdateSettingsBody {
@@ -367,6 +372,11 @@ export interface UpdateSettingsBody {
   agencyEmail?: string | null;
   /** @nullable */
   agencyAddress?: string | null;
+  /**
+   * Day of month when salaries are due (1-31)
+   * @nullable
+   */
+  payrollDay?: number | null;
 }
 
 export interface Expense {

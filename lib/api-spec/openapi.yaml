@@ -1743,6 +1743,9 @@ components:
           type: ["string", "null"]
         agencyAddress:
           type: ["string", "null"]
+        payrollDay:
+          type: ["integer", "null"]
+          description: Day of month when salaries are due (1-31)
 
     UpdateSettingsBody:
       type: object
@@ -1759,6 +1762,9 @@ components:
           type: ["string", "null"]
         agencyAddress:
           type: ["string", "null"]
+        payrollDay:
+          type: ["integer", "null"]
+          description: Day of month when salaries are due (1-31)
 
     # ─── Expense ─────────────────────────────────────────────────────────────
     Expense:

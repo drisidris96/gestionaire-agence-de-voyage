@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   Building2, Phone, Mail, MapPin, Globe, Image as ImageIcon,
-  Upload, Loader2, Shield, Lock, CheckCircle2
+  Upload, Loader2, Shield, Lock, CheckCircle2, Banknote
 } from "lucide-react";
 
 const agencySchema = z.object({
@@ -26,6 +26,7 @@ const agencySchema = z.object({
   agencyEmail: z.string().email("بريد إلكتروني غير صحيح").or(z.literal("")).optional(),
   agencyAddress: z.string().optional(),
   agencyLogoUrl: z.string().optional(),
+  payrollDay: z.coerce.number().min(1).max(31).optional().nullable(),
 });
 type AgencyFormValues = z.infer<typeof agencySchema>;
 
@@ -67,6 +68,7 @@ export default function SettingsPage() {
       agencyEmail: settings.agencyEmail ?? "",
       agencyAddress: settings.agencyAddress ?? "",
       agencyLogoUrl: settings.agencyLogoUrl ?? "",
+      payrollDay: settings.payrollDay ?? null,
     },
   });
 
@@ -286,6 +288,25 @@ export default function SettingsPage() {
                         <FormControl>
                           <Input {...field} disabled={!isAdmin} data-testid="input-agency-address"
                             className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="payrollDay" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Banknote className="h-3.5 w-3.5" /> يوم صرف الرواتب (1-31)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={31}
+                            placeholder="مثال: 30"
+                            disabled={!isAdmin}
+                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""}
+                            value={field.value ?? ""}
+                            onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

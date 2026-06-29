@@ -1,5 +1,4 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
 import { db, settingsTable } from "@workspace/db";
 import { GetSettingsResponse, UpdateSettingsBody, UpdateSettingsResponse } from "@workspace/api-zod";
 
@@ -12,17 +11,21 @@ const DEFAULTS: Record<string, string> = {
   agencyPhone: "",
   agencyEmail: "",
   agencyAddress: "",
+  payrollDay: "",
 };
 
 const KEYS = Object.keys(DEFAULTS);
 
-async function fetchSettings(): Promise<Record<string, string | null>> {
+async function fetchSettings(): Promise<Record<string, unknown>> {
   const rows = await db.select().from(settingsTable);
   const map: Record<string, string | null> = { ...DEFAULTS };
   for (const row of rows) {
     map[row.key] = row.value ?? DEFAULTS[row.key] ?? null;
   }
-  return map;
+  return {
+    ...map,
+    payrollDay: map.payrollDay ? Number(map.payrollDay) : null,
+  };
 }
 
 router.get("/settings", async (_req, res): Promise<void> => {
@@ -37,16 +40,17 @@ router.patch("/settings", async (req, res): Promise<void> => {
     return;
   }
 
-  const updates = parsed.data as Record<string, string | null | undefined>;
+  const updates = parsed.data as Record<string, unknown>;
 
   for (const key of KEYS) {
     if (updates[key] !== undefined) {
+      const val = updates[key] == null ? null : String(updates[key]);
       await db
         .insert(settingsTable)
-        .values({ key, value: updates[key] ?? null, updatedAt: new Date() })
+        .values({ key, value: val, updatedAt: new Date() })
         .onConflictDoUpdate({
           target: settingsTable.key,
-          set: { value: updates[key] ?? null, updatedAt: new Date() },
+          set: { value: val, updatedAt: new Date() },
         });
     }
   }
