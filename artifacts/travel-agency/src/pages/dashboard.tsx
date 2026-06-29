@@ -1,11 +1,10 @@
-import { useGetDashboardStats, useGetRecentBookings, useGetRevenueByMonth, useGetBookingsByStatus, useListPayroll } from "@workspace/api-client-react";
+import { useGetDashboardStats, useGetRecentBookings, useGetRevenueByMonth, useGetBookingsByStatus, useListPayroll, useListEmployees } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpenCheck, CreditCard, Package, Banknote, AlertTriangle, CheckCircle } from "lucide-react";
+import { Users, BookOpenCheck, CreditCard, Package, Banknote, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { useAgency } from "@/hooks/use-agency";
 import {
   BarChart,
   Bar,
@@ -37,64 +36,78 @@ const STATUS_VARIANT: Record<string, string> = {
 };
 
 function PayrollBanner() {
-  const { settings } = useAgency();
+  const { data: employees } = useListEmployees({});
   const { data: payrollRecords } = useListPayroll({});
 
-  const payDay = settings.payrollDay;
-  if (!payDay) return null;
+  if (!employees || employees.length === 0) return null;
 
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayMs = today.getTime();
   const year = today.getFullYear();
-  const month = today.getMonth();
+  const month = today.getMonth() + 1;
 
-  const dueThisMonth = new Date(year, month, payDay);
-  const isPastThisMonth = dueThisMonth < today;
-  const dueDate = isPastThisMonth ? new Date(year, month + 1, payDay) : dueThisMonth;
+  const activeEmployees = employees.filter(e => e.isActive);
+  if (activeEmployees.length === 0) return null;
 
-  const daysLeft = Math.ceil((dueDate.getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000);
-  const isToday = daysLeft === 0;
-  const isOverdue = isPastThisMonth;
+  const alerts: { name: string; dueDate: Date; daysLeft: number; paid: boolean }[] = [];
 
-  const currentMonthPaid = payrollRecords?.some(
-    r => r.month === month + 1 && r.year === year && r.status === "paid"
-  );
+  for (const emp of activeEmployees) {
+    if (!emp.hireDate) continue;
+    const hireDay = new Date(emp.hireDate).getDate();
 
-  if (currentMonthPaid && !isOverdue) return null;
-  if (!isToday && daysLeft > 3 && !isOverdue) return null;
+    const dueThisMonth = new Date(year, month - 1, hireDay);
+    const isPast = dueThisMonth.getTime() < todayMs;
+    const daysLeft = Math.ceil((dueThisMonth.getTime() - todayMs) / 86400000);
 
-  const dd = String(dueDate.getDate()).padStart(2, "0");
-  const mm = String(dueDate.getMonth() + 1).padStart(2, "0");
-  const yyyy = dueDate.getFullYear();
+    const paidThisMonth = payrollRecords?.some(
+      r => r.employeeId === emp.id && r.month === month && r.year === year && r.status === "paid"
+    ) ?? false;
 
-  if (isOverdue && !currentMonthPaid) {
-    return (
-      <Link href="/employees">
-        <div className="flex items-center gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 cursor-pointer hover:bg-red-100 transition-colors">
-          <AlertTriangle className="h-5 w-5 shrink-0 text-red-600" />
-          <div className="flex-1">
-            <span className="font-bold">⚠️ رواتب الشهر لم تُصرف بعد!</span>
-            <span className="mr-2 text-red-600">كان موعد الصرف {`${dd}-${mm}-${yyyy}`} — اضغط للانتقال لصفحة الموظفين</span>
-          </div>
-        </div>
-      </Link>
-    );
+    if (isPast && !paidThisMonth) {
+      alerts.push({ name: emp.name, dueDate: dueThisMonth, daysLeft, paid: false });
+    } else if (!isPast && daysLeft <= 3) {
+      alerts.push({ name: emp.name, dueDate: dueThisMonth, daysLeft, paid: paidThisMonth });
+    }
   }
 
+  if (alerts.length === 0) return null;
+
+  const overdueAlerts = alerts.filter(a => a.daysLeft < 0 && !a.paid);
+  const upcomingAlerts = alerts.filter(a => a.daysLeft >= 0);
+
+  const fmt = (d: Date) =>
+    `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+
   return (
-    <Link href="/employees">
-      <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm cursor-pointer hover:opacity-90 transition-colors ${isToday ? "bg-red-50 border-red-200 text-red-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
-        <Banknote className="h-5 w-5 shrink-0" />
-        <div className="flex-1">
-          <span className="font-semibold">موعد صرف الرواتب: </span>
-          <span className="font-bold">{`${dd}-${mm}-${yyyy}`}</span>
-          {isToday
-            ? <span className="mr-2 font-bold text-red-600"> — اليوم!</span>
-            : <span className="mr-2">{` (بعد ${daysLeft} ${daysLeft === 1 ? "يوم" : "أيام"})`}</span>
-          }
-          {currentMonthPaid && <span className="mr-2 text-green-600 font-semibold flex-inline items-center gap-1">✓ تم الصرف هذا الشهر</span>}
-        </div>
-      </div>
-    </Link>
+    <div className="space-y-2">
+      {overdueAlerts.map(a => (
+        <Link key={a.name} href="/employees">
+          <div className="flex items-center gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 cursor-pointer hover:bg-red-100 transition-colors">
+            <AlertTriangle className="h-5 w-5 shrink-0 text-red-600" />
+            <div className="flex-1">
+              <span className="font-bold">⚠️ لم يُصرف راتب {a.name} بعد!</span>
+              <span className="mr-2">كان موعده {fmt(a.dueDate)} — اضغط للانتقال لصفحة الموظفين</span>
+            </div>
+          </div>
+        </Link>
+      ))}
+      {upcomingAlerts.map(a => (
+        <Link key={a.name} href="/employees">
+          <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm cursor-pointer hover:opacity-90 transition-colors ${a.daysLeft === 0 ? "bg-red-50 border-red-200 text-red-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+            <Banknote className="h-5 w-5 shrink-0" />
+            <div className="flex-1">
+              <span className="font-semibold">موعد راتب {a.name}: </span>
+              <span className="font-bold">{fmt(a.dueDate)}</span>
+              {a.daysLeft === 0
+                ? <span className="mr-2 font-bold text-red-600"> — اليوم!</span>
+                : <span className="mr-2"> (بعد {a.daysLeft} {a.daysLeft === 1 ? "يوم" : "أيام"})</span>
+              }
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
   );
 }
 
