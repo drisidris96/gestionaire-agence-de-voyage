@@ -141,7 +141,7 @@ export default function Dashboard() {
                     <Badge variant={STATUS_VARIANT[booking.status] as any || "outline"}>
                       {statusAr(booking.status)}
                     </Badge>
-                    <div className="text-sm mt-1 text-muted-foreground">{format(new Date(booking.travelDate), 'd MMM yyyy', { locale: ar })}</div>
+                    <div className="text-sm mt-1 text-muted-foreground">{booking.travelDate ? format(new Date(booking.travelDate), 'd MMMM yyyy', { locale: ar }) : "—"}</div>
                   </div>
                 </div>
               ))}

@@ -43,7 +43,7 @@ const bookingSchema = z.object({
   packageId: z.coerce.number().optional().nullable(),
   bookingType: z.enum(["hotel", "flight", "hotel_flight", "other"]).default("flight"),
   customBookingType: z.string().optional(),
-  travelDate: z.string().min(1, "تاريخ السفر مطلوب"),
+  travelDate: z.string().optional(),
   returnDate: z.string().optional(),
   numberOfPersons: z.coerce.number().min(1, "يجب أن يكون شخص واحد على الأقل"),
   totalPrice: z.coerce.number().min(0, "السعر الإجمالي يجب أن يكون صحيحًا"),
@@ -102,7 +102,7 @@ export default function BookingsPage() {
       packageId: booking.packageId ?? null,
       bookingType: booking.bookingType ?? "flight",
       customBookingType: booking.customBookingType || "",
-      travelDate: booking.travelDate.split("T")[0],
+      travelDate: booking.travelDate ? booking.travelDate.split("T")[0] : "",
       returnDate: booking.returnDate ? booking.returnDate.split("T")[0] : "",
       numberOfPersons: booking.numberOfPersons,
       totalPrice: booking.totalPrice,
@@ -228,7 +228,7 @@ export default function BookingsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">
-                      {format(new Date(booking.travelDate), "d MMM yyyy", { locale: ar })}
+                      {booking.travelDate ? format(new Date(booking.travelDate), "d MMMM yyyy", { locale: ar }) : "—"}
                     </TableCell>
                     <TableCell className="font-semibold text-primary">
                       {booking.totalPrice.toLocaleString()} $
@@ -366,8 +366,8 @@ export default function BookingsPage() {
 
                 <FormField control={form.control} name="travelDate" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>تاريخ السفر *</FormLabel>
-                    <FormControl><Input type="date" {...field} data-testid="input-travel-date" /></FormControl>
+                    <FormLabel>تاريخ السفر</FormLabel>
+                    <FormControl><Input type="date" {...field} value={field.value || ""} data-testid="input-travel-date" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />

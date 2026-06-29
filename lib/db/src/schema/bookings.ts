@@ -8,7 +8,7 @@ export const bookingsTable = pgTable("bookings", {
   packageId: integer("package_id"),
   bookingType: text("booking_type").notNull().default("flight"),
   customBookingType: text("custom_booking_type"),
-  travelDate: timestamp("travel_date", { withTimezone: true }).notNull(),
+  travelDate: timestamp("travel_date", { withTimezone: true }),
   returnDate: timestamp("return_date", { withTimezone: true }),
   numberOfPersons: integer("number_of_persons").notNull().default(1),
   totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),

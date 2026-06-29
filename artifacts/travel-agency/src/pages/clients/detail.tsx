@@ -232,7 +232,7 @@ export default function ClientDetail() {
                       <div className="flex items-center text-sm text-muted-foreground gap-4">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(booking.travelDate), 'd MMM yyyy', { locale: ar })}
+                          {booking.travelDate ? format(new Date(booking.travelDate), 'd MMMM yyyy', { locale: ar }) : "—"}
                         </span>
                         <span className="flex items-center gap-1">
                           <User className="h-3 w-3" />

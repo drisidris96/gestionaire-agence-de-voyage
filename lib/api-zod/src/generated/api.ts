@@ -298,7 +298,7 @@ export const ListBookingsResponseItem = zod.object({
     .enum(["hotel", "flight", "hotel_flight", "other"])
     .optional(),
   customBookingType: zod.string().nullish(),
-  travelDate: zod.coerce.date(),
+  travelDate: zod.coerce.date().nullish(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
@@ -320,7 +320,7 @@ export const CreateBookingBody = zod.object({
     .enum(["hotel", "flight", "hotel_flight", "other"])
     .optional(),
   customBookingType: zod.string().nullish(),
-  travelDate: zod.coerce.date(),
+  travelDate: zod.coerce.date().nullish(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
@@ -349,7 +349,7 @@ export const GetBookingResponse = zod.object({
     .enum(["hotel", "flight", "hotel_flight", "other"])
     .optional(),
   customBookingType: zod.string().nullish(),
-  travelDate: zod.coerce.date(),
+  travelDate: zod.coerce.date().nullish(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
@@ -395,7 +395,7 @@ export const UpdateBookingResponse = zod.object({
     .enum(["hotel", "flight", "hotel_flight", "other"])
     .optional(),
   customBookingType: zod.string().nullish(),
-  travelDate: zod.coerce.date(),
+  travelDate: zod.coerce.date().nullish(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
@@ -503,7 +503,7 @@ export const GetRecentBookingsResponseItem = zod.object({
     .enum(["hotel", "flight", "hotel_flight", "other"])
     .optional(),
   customBookingType: zod.string().nullish(),
-  travelDate: zod.coerce.date(),
+  travelDate: zod.coerce.date().nullish(),
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),

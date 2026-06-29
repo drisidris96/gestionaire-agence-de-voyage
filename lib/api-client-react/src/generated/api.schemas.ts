@@ -172,7 +172,8 @@ export interface Booking {
   bookingType?: BookingBookingType;
   /** @nullable */
   customBookingType?: string | null;
-  travelDate: string;
+  /** @nullable */
+  travelDate?: string | null;
   /** @nullable */
   returnDate?: string | null;
   numberOfPersons: number;
@@ -212,7 +213,8 @@ export interface CreateBookingBody {
   bookingType?: CreateBookingBodyBookingType;
   /** @nullable */
   customBookingType?: string | null;
-  travelDate: string;
+  /** @nullable */
+  travelDate?: string | null;
   /** @nullable */
   returnDate?: string | null;
   numberOfPersons: number;

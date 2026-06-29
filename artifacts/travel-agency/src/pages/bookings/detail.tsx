@@ -47,7 +47,7 @@ const editSchema = z.object({
   clientId: z.coerce.number().min(1, "العميل مطلوب"),
   packageId: z.coerce.number().min(1, "الباقة مطلوبة"),
   bookingType: z.enum(["hotel", "flight", "hotel_flight"]).default("flight"),
-  travelDate: z.string().min(1, "تاريخ السفر مطلوب"),
+  travelDate: z.string().optional(),
   returnDate: z.string().optional(),
   numberOfPersons: z.coerce.number().min(1, "يجب أن يكون شخص واحد على الأقل"),
   totalPrice: z.coerce.number().min(0),
@@ -105,7 +105,7 @@ export default function BookingDetail() {
       clientId: booking.clientId,
       packageId: booking.packageId ?? undefined,
       bookingType: (booking.bookingType as any) ?? "flight",
-      travelDate: booking.travelDate.split("T")[0],
+      travelDate: booking.travelDate ? booking.travelDate.split("T")[0] : "",
       returnDate: booking.returnDate ? booking.returnDate.split("T")[0] : "",
       numberOfPersons: booking.numberOfPersons,
       totalPrice: booking.totalPrice,
@@ -230,8 +230,8 @@ export default function BookingDetail() {
                 <InfoItem icon={TypeIcon} label="نوع الحجز" value={typeInfo.label} />
                 <InfoItem icon={Plane} label="الوجهة" value={booking.destinationName ?? "—"} />
                 <InfoItem icon={Calendar} label="تواريخ السفر"
-                  value={format(new Date(booking.travelDate), "d MMM yyyy", { locale: ar })}
-                  sub={booking.returnDate ? `العودة: ${format(new Date(booking.returnDate), "d MMM yyyy", { locale: ar })}` : undefined}
+                  value={booking.travelDate ? format(new Date(booking.travelDate), "d MMMM yyyy", { locale: ar }) : "—"}
+                  sub={booking.returnDate ? `العودة: ${format(new Date(booking.returnDate), "d MMMM yyyy", { locale: ar })}` : undefined}
                 />
                 <InfoItem icon={User} label="المسافرون" value={`${booking.numberOfPersons} مسافر`} />
                 <InfoItem icon={FileText} label="ملاحظات" value={booking.notes || "لا يوجد"} />
@@ -264,7 +264,7 @@ export default function BookingDetail() {
                         <div>
                           <div className="font-medium">{payment.amount.toLocaleString()} $</div>
                           <div className="text-xs text-muted-foreground">
-                            {format(new Date(payment.paymentDate), "d MMM yyyy", { locale: ar })} • {methodAr(payment.method)}
+                            {format(new Date(payment.paymentDate), "d MMMM yyyy", { locale: ar })} • {methodAr(payment.method)}
                           </div>
                         </div>
                       </div>
@@ -355,8 +355,8 @@ export default function BookingDetail() {
 
                 <FormField control={editForm.control} name="travelDate" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>تاريخ السفر *</FormLabel>
-                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormLabel>تاريخ السفر</FormLabel>
+                    <FormControl><Input type="date" {...field} value={field.value || ""} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />

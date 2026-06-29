@@ -1506,7 +1506,7 @@ components:
     # ─── Booking ─────────────────────────────────────────────────────────────
     Booking:
       type: object
-      required: [id, clientId, travelDate, numberOfPersons, totalPrice, status, createdAt]
+      required: [id, clientId, numberOfPersons, totalPrice, status, createdAt]
       properties:
         id:
           type: integer
@@ -1526,7 +1526,7 @@ components:
         customBookingType:
           type: ["string", "null"]
         travelDate:
-          type: string
+          type: ["string", "null"]
           format: date-time
         returnDate:
           type: ["string", "null"]
@@ -1551,7 +1551,7 @@ components:
 
     CreateBookingBody:
       type: object
-      required: [clientId, travelDate, numberOfPersons, totalPrice]
+      required: [clientId, numberOfPersons, totalPrice]
       properties:
         clientId:
           type: integer
@@ -1563,7 +1563,7 @@ components:
         customBookingType:
           type: ["string", "null"]
         travelDate:
-          type: string
+          type: ["string", "null"]
           format: date-time
         returnDate:
           type: ["string", "null"]
