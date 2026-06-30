@@ -137,14 +137,14 @@ function InvoiceDoc({ booking, agency }: { booking: any; agency: any }) {
             <td className="p-2.5 text-center text-gray-600">التكلفة الإجمالية للخدمة</td>
             <td className="p-2.5 text-center font-medium text-red-600">{serviceCost > 0 ? `${serviceCost.toLocaleString()} $` : "—"}</td>
           </tr>
-          <tr className="border-b border-gray-200">
-            <td className="p-2.5 font-bold">المدخول الإجمالي</td>
-            <td className="p-2.5 text-center text-gray-500 text-xs">الإجمالي − سعر الخدمة</td>
-            <td className="p-2.5 text-center font-bold" style={{ color: "#16a34a" }}>{profit.toLocaleString()} $</td>
-          </tr>
-          <tr style={{ backgroundColor: "#C9A22710" }}>
-            <td className="p-2.5 font-bold" colSpan={2}>الإجمالي الكلي</td>
+          <tr className="border-b border-gray-200" style={{ backgroundColor: "#C9A22710" }}>
+            <td className="p-2.5 font-bold" colSpan={2}>المبلغ الإجمالي</td>
             <td className="p-2.5 text-center font-bold text-lg" style={{ color: "#C9A227" }}>{booking.totalPrice.toLocaleString()} $</td>
+          </tr>
+          <tr style={{ backgroundColor: "#f0fdf4" }}>
+            <td className="p-2.5 font-bold">المدخول الكلي</td>
+            <td className="p-2.5 text-center text-gray-500 text-xs">المبلغ الإجمالي − سعر الخدمة</td>
+            <td className="p-2.5 text-center font-bold text-lg" style={{ color: "#16a34a" }}>{profit.toLocaleString()} $</td>
           </tr>
         </tbody>
       </table>
