@@ -178,6 +178,7 @@ export interface Booking {
   returnDate?: string | null;
   numberOfPersons: number;
   totalPrice: number;
+  serviceCost?: number;
   paidAmount?: number;
   status: BookingStatus;
   /** @nullable */
@@ -219,6 +220,7 @@ export interface CreateBookingBody {
   returnDate?: string | null;
   numberOfPersons: number;
   totalPrice: number;
+  serviceCost?: number;
   initialPaidAmount?: number;
   status?: CreateBookingBodyStatus;
   /** @nullable */
@@ -257,6 +259,7 @@ export interface UpdateBookingBody {
   returnDate?: string | null;
   numberOfPersons?: number;
   totalPrice?: number;
+  serviceCost?: number;
   status?: UpdateBookingBodyStatus;
   /** @nullable */
   notes?: string | null;

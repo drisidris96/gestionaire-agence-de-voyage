@@ -302,6 +302,7 @@ export const ListBookingsResponseItem = zod.object({
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
+  serviceCost: zod.number().optional(),
   paidAmount: zod.number().optional(),
   status: zod.enum(["pending", "confirmed", "cancelled", "completed"]),
   notes: zod.string().nullish(),
@@ -324,6 +325,7 @@ export const CreateBookingBody = zod.object({
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
+  serviceCost: zod.number().optional(),
   initialPaidAmount: zod.number().optional(),
   status: zod
     .enum(["pending", "confirmed", "cancelled", "completed"])
@@ -353,6 +355,7 @@ export const GetBookingResponse = zod.object({
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
+  serviceCost: zod.number().optional(),
   paidAmount: zod.number().optional(),
   status: zod.enum(["pending", "confirmed", "cancelled", "completed"]),
   notes: zod.string().nullish(),
@@ -378,6 +381,7 @@ export const UpdateBookingBody = zod.object({
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number().optional(),
   totalPrice: zod.number().optional(),
+  serviceCost: zod.number().optional(),
   status: zod
     .enum(["pending", "confirmed", "cancelled", "completed"])
     .optional(),
@@ -399,6 +403,7 @@ export const UpdateBookingResponse = zod.object({
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
+  serviceCost: zod.number().optional(),
   paidAmount: zod.number().optional(),
   status: zod.enum(["pending", "confirmed", "cancelled", "completed"]),
   notes: zod.string().nullish(),
@@ -507,6 +512,7 @@ export const GetRecentBookingsResponseItem = zod.object({
   returnDate: zod.coerce.date().nullish(),
   numberOfPersons: zod.number(),
   totalPrice: zod.number(),
+  serviceCost: zod.number().optional(),
   paidAmount: zod.number().optional(),
   status: zod.enum(["pending", "confirmed", "cancelled", "completed"]),
   notes: zod.string().nullish(),
