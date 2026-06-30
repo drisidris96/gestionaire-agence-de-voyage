@@ -117,21 +117,6 @@ function InvoiceDoc({ booking, agency }: { booking: any; agency: any }) {
             <td className="p-2.5 text-center text-gray-600">{bookingTypeLabel}</td>
             <td className="p-2.5 text-center">—</td>
           </tr>
-          {booking.travelDate && (
-            <tr className="border-b border-gray-200 bg-gray-50/50">
-              <td className="p-2.5 font-medium">تاريخ السفر</td>
-              <td className="p-2.5 text-center text-gray-600">
-                {format(new Date(booking.travelDate), "d MMMM yyyy", { locale: ar })}
-                {booking.returnDate && ` ← ${format(new Date(booking.returnDate), "d MMMM yyyy", { locale: ar })}`}
-              </td>
-              <td className="p-2.5 text-center">—</td>
-            </tr>
-          )}
-          <tr className="border-b border-gray-200">
-            <td className="p-2.5 font-medium">عدد المسافرين</td>
-            <td className="p-2.5 text-center text-gray-600">{booking.numberOfPersons} أشخاص</td>
-            <td className="p-2.5 text-center">—</td>
-          </tr>
           <tr className="border-b border-gray-200 bg-gray-50/50">
             <td className="p-2.5 font-medium">سعر الخدمة</td>
             <td className="p-2.5 text-center text-gray-600">التكلفة الإجمالية للخدمة</td>
