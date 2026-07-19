@@ -3,9 +3,9 @@ import {
   useListEmployees, useCreateEmployee, useUpdateEmployee, useDeleteEmployee,
   useListPayroll, useCreatePayroll, useUpdatePayroll, useDeletePayroll,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { useAgency } from "@/hooks/use-agency";
+import { useAgency, AGENCY_QUERY_KEY } from "@/hooks/use-agency";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Plus, MoreHorizontal, Pencil, Trash2, Users, Printer,
-  FileText, Banknote, CheckCircle2, Clock, Loader2, Phone
+  FileText, Banknote, CheckCircle2, Clock, Loader2, Phone, ShieldCheck, Receipt, Save
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -156,7 +156,24 @@ export default function EmployeesPage() {
   const updatePayroll = useUpdatePayroll();
   const deletePayroll = useDeletePayroll();
 
-  const [tab, setTab] = useState<"employees" | "payroll">("employees");
+  const [insuranceDayInput, setInsuranceDayInput] = useState<string>(agency.insuranceDay?.toString() ?? "");
+  const [taxDayInput, setTaxDayInput] = useState<string>(agency.taxDay?.toString() ?? "");
+
+  const saveDaysMutation = useMutation({
+    mutationFn: (data: { insuranceDay?: number | null; taxDay?: number | null }) =>
+      fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then(r => r.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AGENCY_QUERY_KEY });
+      toast({ title: "تم حفظ الإعدادات" });
+    },
+    onError: () => toast({ title: "حدث خطأ أثناء الحفظ", variant: "destructive" }),
+  });
+
+  const [tab, setTab] = useState<"employees" | "payroll" | "insurance">("employees");
   const [isEmpOpen, setIsEmpOpen] = useState(false);
   const [editingEmp, setEditingEmp] = useState<any>(null);
   const [deleteEmpTarget, setDeleteEmpTarget] = useState<any>(null);
@@ -285,6 +302,7 @@ export default function EmployeesPage() {
           <TabsList className="mb-4">
             <TabsTrigger value="employees" className="gap-2"><Users className="h-4 w-4" /> الموظفون</TabsTrigger>
             <TabsTrigger value="payroll" className="gap-2"><Banknote className="h-4 w-4" /> كشوف الرواتب</TabsTrigger>
+            <TabsTrigger value="insurance" className="gap-2"><ShieldCheck className="h-4 w-4" /> التأمينات والضرائب</TabsTrigger>
           </TabsList>
 
           {/* ── Employees Tab ── */}
@@ -341,6 +359,156 @@ export default function EmployeesPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </TabsContent>
+
+          {/* ── Insurance & Tax Tab ── */}
+          <TabsContent value="insurance">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Insurance Card */}
+              <Card className="shadow-sm border">
+                <CardContent className="pt-5 space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-base">التأمين الاجتماعي</div>
+                      <div className="text-xs text-muted-foreground">تحديد يوم دفع اشتراكات التأمين شهرياً</div>
+                    </div>
+                  </div>
+
+                  {/* Upcoming date banner */}
+                  {agency.insuranceDay && (() => {
+                    const today = new Date();
+                    const y = today.getFullYear(), m = today.getMonth();
+                    const dueThis = new Date(y, m, agency.insuranceDay!);
+                    const due = dueThis < today ? new Date(y, m + 1, agency.insuranceDay!) : dueThis;
+                    const daysLeft = Math.ceil((due.getTime() - new Date().setHours(0,0,0,0)) / 86400000);
+                    const isToday = daysLeft === 0;
+                    const isUrgent = daysLeft <= 3;
+                    return (
+                      <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${isToday ? "bg-red-50 border-red-200 text-red-800" : isUrgent ? "bg-amber-50 border-amber-200 text-amber-800" : "bg-blue-50 border-blue-200 text-blue-800"}`}>
+                        <Receipt className="h-4 w-4 shrink-0" />
+                        <span>
+                          الموعد القادم: <strong>{String(due.getDate()).padStart(2,"0")}-{String(due.getMonth()+1).padStart(2,"0")}-{due.getFullYear()}</strong>
+                          {isToday ? <span className="font-bold text-red-600 mr-2"> — اليوم!</span>
+                            : <span className="text-muted-foreground mr-1"> ({daysLeft === 1 ? "غداً" : `بعد ${daysLeft} أيام`})</span>}
+                        </span>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1 space-y-1">
+                      <label className="text-sm font-medium">يوم الدفع (1-31)</label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="مثال: 15"
+                        value={insuranceDayInput}
+                        onChange={e => setInsuranceDayInput(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      className="gap-2 shrink-0"
+                      disabled={saveDaysMutation.isPending}
+                      onClick={() => {
+                        const val = insuranceDayInput === "" ? null : Number(insuranceDayInput);
+                        saveDaysMutation.mutate({ insuranceDay: val });
+                      }}
+                    >
+                      {saveDaysMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      حفظ
+                    </Button>
+                  </div>
+                  {agency.insuranceDay && (
+                    <p className="text-xs text-muted-foreground">يوم الدفع الحالي: <strong>{agency.insuranceDay}</strong> من كل شهر.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Tax Card */}
+              <Card className="shadow-sm border">
+                <CardContent className="pt-5 space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                      <Receipt className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-base">الضرائب والرسوم</div>
+                      <div className="text-xs text-muted-foreground">تحديد يوم تسديد الضرائب الشهرية</div>
+                    </div>
+                  </div>
+
+                  {/* Upcoming date banner */}
+                  {agency.taxDay && (() => {
+                    const today = new Date();
+                    const y = today.getFullYear(), m = today.getMonth();
+                    const dueThis = new Date(y, m, agency.taxDay!);
+                    const due = dueThis < today ? new Date(y, m + 1, agency.taxDay!) : dueThis;
+                    const daysLeft = Math.ceil((due.getTime() - new Date().setHours(0,0,0,0)) / 86400000);
+                    const isToday = daysLeft === 0;
+                    const isUrgent = daysLeft <= 3;
+                    return (
+                      <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${isToday ? "bg-red-50 border-red-200 text-red-800" : isUrgent ? "bg-amber-50 border-amber-200 text-amber-800" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+                        <Receipt className="h-4 w-4 shrink-0" />
+                        <span>
+                          الموعد القادم: <strong>{String(due.getDate()).padStart(2,"0")}-{String(due.getMonth()+1).padStart(2,"0")}-{due.getFullYear()}</strong>
+                          {isToday ? <span className="font-bold text-red-600 mr-2"> — اليوم!</span>
+                            : <span className="text-muted-foreground mr-1"> ({daysLeft === 1 ? "غداً" : `بعد ${daysLeft} أيام`})</span>}
+                        </span>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1 space-y-1">
+                      <label className="text-sm font-medium">يوم الدفع (1-31)</label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={31}
+                        placeholder="مثال: 20"
+                        value={taxDayInput}
+                        onChange={e => setTaxDayInput(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      className="gap-2 shrink-0"
+                      disabled={saveDaysMutation.isPending}
+                      onClick={() => {
+                        const val = taxDayInput === "" ? null : Number(taxDayInput);
+                        saveDaysMutation.mutate({ taxDay: val });
+                      }}
+                    >
+                      {saveDaysMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      حفظ
+                    </Button>
+                  </div>
+                  {agency.taxDay && (
+                    <p className="text-xs text-muted-foreground">يوم الدفع الحالي: <strong>{agency.taxDay}</strong> من كل شهر.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Summary row showing current settings */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { label: "يوم صرف الرواتب", value: agency.payrollDay, icon: <Banknote className="h-5 w-5 text-primary" />, color: "bg-primary/10 border-primary/20" },
+                { label: "يوم دفع التأمين", value: agency.insuranceDay, icon: <ShieldCheck className="h-5 w-5 text-blue-600" />, color: "bg-blue-50 border-blue-200" },
+                { label: "يوم تسديد الضرائب", value: agency.taxDay, icon: <Receipt className="h-5 w-5 text-amber-600" />, color: "bg-amber-50 border-amber-200" },
+              ].map(item => (
+                <div key={item.label} className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${item.color}`}>
+                  {item.icon}
+                  <div>
+                    <div className="text-xs text-muted-foreground">{item.label}</div>
+                    <div className="font-bold text-lg">{item.value ? `اليوم ${item.value}` : "غير محدد"}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </TabsContent>
 
