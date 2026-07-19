@@ -12,6 +12,8 @@ const DEFAULTS: Record<string, string> = {
   agencyEmail: "",
   agencyAddress: "",
   payrollDay: "",
+  insuranceDay: "",
+  taxDay: "",
 };
 
 const KEYS = Object.keys(DEFAULTS);
@@ -25,6 +27,8 @@ async function fetchSettings(): Promise<Record<string, unknown>> {
   return {
     ...map,
     payrollDay: map.payrollDay ? Number(map.payrollDay) : null,
+    insuranceDay: map.insuranceDay ? Number(map.insuranceDay) : null,
+    taxDay: map.taxDay ? Number(map.taxDay) : null,
   };
 }
 

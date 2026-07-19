@@ -1,6 +1,7 @@
 import { useGetDashboardStats, useGetRecentBookings, useGetRevenueByMonth, useGetBookingsByStatus, useListPayroll, useListEmployees } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpenCheck, CreditCard, Package, Banknote, AlertTriangle } from "lucide-react";
+import { Users, BookOpenCheck, CreditCard, Package, Banknote, AlertTriangle, ShieldCheck, Receipt } from "lucide-react";
+import { useAgency } from "@/hooks/use-agency";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -111,11 +112,73 @@ function PayrollBanner() {
   );
 }
 
+function DayOfMonthBanner({
+  day,
+  labelUpcoming,
+  labelOverdue,
+  labelToday,
+  icon: Icon,
+  color,
+  href,
+}: {
+  day: number | null;
+  labelUpcoming: (days: number) => string;
+  labelOverdue: string;
+  labelToday: string;
+  icon: React.ElementType;
+  color: "amber" | "blue" | "purple";
+  href: string;
+}) {
+  if (!day) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayMs = today.getTime();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  const dueThisMonth = new Date(year, month, day);
+  const daysLeft = Math.ceil((dueThisMonth.getTime() - todayMs) / 86400000);
+
+  const overdue = daysLeft < 0;
+  const isToday = daysLeft === 0;
+  const upcoming = !overdue && !isToday && daysLeft <= 5;
+
+  if (!overdue && !isToday && !upcoming) return null;
+
+  const fmt = (d: Date) =>
+    `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+
+  const colorMap = {
+    amber: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-800", hover: "hover:bg-amber-100" },
+    blue:  { bg: "bg-blue-50",  border: "border-blue-200",  text: "text-blue-800",  hover: "hover:bg-blue-100"  },
+    purple:{ bg: "bg-purple-50",border: "border-purple-200",text: "text-purple-800",hover: "hover:bg-purple-100"},
+  };
+  const dangerStyle = "bg-red-50 border-red-300 text-red-800 hover:bg-red-100";
+  const c = overdue || isToday ? dangerStyle : `${colorMap[color].bg} ${colorMap[color].border} ${colorMap[color].text} ${colorMap[color].hover}`;
+
+  const message = overdue
+    ? labelOverdue
+    : isToday
+    ? `${labelToday} — ${fmt(dueThisMonth)}`
+    : `${labelUpcoming(daysLeft)} — ${fmt(dueThisMonth)} (بعد ${daysLeft} ${daysLeft === 1 ? "يوم" : "أيام"})`;
+
+  return (
+    <Link href={href}>
+      <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm cursor-pointer transition-colors ${c}`}>
+        <Icon className="h-5 w-5 shrink-0" />
+        <span className="font-semibold">{message}</span>
+      </div>
+    </Link>
+  );
+}
+
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: recentBookings, isLoading: recentLoading } = useGetRecentBookings();
   const { data: revenueData, isLoading: revenueLoading } = useGetRevenueByMonth();
   const { data: statusData, isLoading: statusLoading } = useGetBookingsByStatus();
+  const { settings } = useAgency();
 
   const statusDataAr = statusData?.map(d => ({ ...d, name: statusAr(d.status) }));
 
@@ -126,7 +189,27 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-1">نظرة عامة على أداء وكالتك السياحية.</p>
       </div>
 
-      <PayrollBanner />
+      <div className="space-y-2">
+        <PayrollBanner />
+        <DayOfMonthBanner
+          day={settings.insuranceDay}
+          labelUpcoming={(days) => `موعد دفع التأمينات الاجتماعية`}
+          labelOverdue="⚠️ لم تُدفع التأمينات الاجتماعية بعد!"
+          labelToday="موعد التأمينات الاجتماعية اليوم!"
+          icon={ShieldCheck}
+          color="blue"
+          href="/settings"
+        />
+        <DayOfMonthBanner
+          day={settings.taxDay}
+          labelUpcoming={(days) => `موعد دفع الضرائب`}
+          labelOverdue="⚠️ لم تُدفع الضرائب بعد!"
+          labelToday="موعد الضرائب اليوم!"
+          icon={Receipt}
+          color="purple"
+          href="/settings"
+        />
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title="إجمالي العملاء" value={stats?.totalClients} icon={Users} loading={statsLoading} />

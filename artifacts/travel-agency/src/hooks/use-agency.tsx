@@ -9,6 +9,8 @@ export interface AgencySettings {
   agencyEmail: string | null;
   agencyAddress: string | null;
   payrollDay: number | null;
+  insuranceDay: number | null;
+  taxDay: number | null;
 }
 
 const DEFAULTS: AgencySettings = {
@@ -19,6 +21,8 @@ const DEFAULTS: AgencySettings = {
   agencyEmail: "",
   agencyAddress: "",
   payrollDay: null,
+  insuranceDay: null,
+  taxDay: null,
 };
 
 const QUERY_KEY = ["agency-settings"];

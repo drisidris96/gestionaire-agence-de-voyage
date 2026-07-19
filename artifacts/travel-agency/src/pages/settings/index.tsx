@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   Building2, Phone, Mail, MapPin, Globe, Image as ImageIcon,
-  Upload, Loader2, Shield, Lock, CheckCircle2, Banknote
+  Upload, Loader2, Shield, Lock, CheckCircle2, Banknote, ShieldCheck, Receipt
 } from "lucide-react";
 
 const agencySchema = z.object({
@@ -27,6 +27,8 @@ const agencySchema = z.object({
   agencyAddress: z.string().optional(),
   agencyLogoUrl: z.string().optional(),
   payrollDay: z.coerce.number().min(1).max(31).optional().nullable(),
+  insuranceDay: z.coerce.number().min(1).max(31).optional().nullable(),
+  taxDay: z.coerce.number().min(1).max(31).optional().nullable(),
 });
 type AgencyFormValues = z.infer<typeof agencySchema>;
 
@@ -69,6 +71,8 @@ export default function SettingsPage() {
       agencyAddress: settings.agencyAddress ?? "",
       agencyLogoUrl: settings.agencyLogoUrl ?? "",
       payrollDay: settings.payrollDay ?? null,
+      insuranceDay: settings.insuranceDay ?? null,
+      taxDay: settings.taxDay ?? null,
     },
   });
 
@@ -302,6 +306,44 @@ export default function SettingsPage() {
                             min={1}
                             max={31}
                             placeholder="مثال: 30"
+                            disabled={!isAdmin}
+                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""}
+                            value={field.value ?? ""}
+                            onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="insuranceDay" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" /> يوم دفع التأمينات (1-31)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={31}
+                            placeholder="مثال: 15"
+                            disabled={!isAdmin}
+                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""}
+                            value={field.value ?? ""}
+                            onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="taxDay" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Receipt className="h-3.5 w-3.5" /> يوم دفع الضرائب (1-31)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={31}
+                            placeholder="مثال: 20"
                             disabled={!isAdmin}
                             className={!isAdmin ? "bg-muted cursor-not-allowed" : ""}
                             value={field.value ?? ""}

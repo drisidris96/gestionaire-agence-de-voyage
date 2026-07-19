@@ -362,6 +362,16 @@ export interface AgencySettings {
    * @nullable
    */
   payrollDay?: number | null;
+  /**
+   * Day of month when insurance payments are due (1-31)
+   * @nullable
+   */
+  insuranceDay?: number | null;
+  /**
+   * Day of month when tax payments are due (1-31)
+   * @nullable
+   */
+  taxDay?: number | null;
 }
 
 export interface UpdateSettingsBody {
@@ -380,6 +390,16 @@ export interface UpdateSettingsBody {
    * @nullable
    */
   payrollDay?: number | null;
+  /**
+   * Day of month when insurance payments are due (1-31)
+   * @nullable
+   */
+  insuranceDay?: number | null;
+  /**
+   * Day of month when tax payments are due (1-31)
+   * @nullable
+   */
+  taxDay?: number | null;
 }
 
 export interface Expense {

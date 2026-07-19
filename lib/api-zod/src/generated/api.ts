@@ -584,6 +584,14 @@ export const GetSettingsResponse = zod.object({
     .number()
     .nullish()
     .describe("Day of month when salaries are due (1-31)"),
+  insuranceDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when insurance payments are due (1-31)"),
+  taxDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when tax payments are due (1-31)"),
 });
 
 /**
@@ -600,6 +608,14 @@ export const UpdateSettingsBody = zod.object({
     .number()
     .nullish()
     .describe("Day of month when salaries are due (1-31)"),
+  insuranceDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when insurance payments are due (1-31)"),
+  taxDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when tax payments are due (1-31)"),
 });
 
 export const UpdateSettingsResponse = zod.object({
@@ -613,6 +629,14 @@ export const UpdateSettingsResponse = zod.object({
     .number()
     .nullish()
     .describe("Day of month when salaries are due (1-31)"),
+  insuranceDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when insurance payments are due (1-31)"),
+  taxDay: zod
+    .number()
+    .nullish()
+    .describe("Day of month when tax payments are due (1-31)"),
 });
 
 /**

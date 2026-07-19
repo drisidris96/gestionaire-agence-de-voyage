@@ -1752,6 +1752,12 @@ components:
         payrollDay:
           type: ["integer", "null"]
           description: Day of month when salaries are due (1-31)
+        insuranceDay:
+          type: ["integer", "null"]
+          description: Day of month when insurance payments are due (1-31)
+        taxDay:
+          type: ["integer", "null"]
+          description: Day of month when tax payments are due (1-31)
 
     UpdateSettingsBody:
       type: object
@@ -1771,6 +1777,12 @@ components:
         payrollDay:
           type: ["integer", "null"]
           description: Day of month when salaries are due (1-31)
+        insuranceDay:
+          type: ["integer", "null"]
+          description: Day of month when insurance payments are due (1-31)
+        taxDay:
+          type: ["integer", "null"]
+          description: Day of month when tax payments are due (1-31)
 
     # ─── Expense ─────────────────────────────────────────────────────────────
     Expense:
