@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { AgencyProvider } from "@/hooks/use-agency";
+import { ErrorBoundary } from "@/components/error-boundary";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 
@@ -46,28 +47,30 @@ function ProtectedRouter() {
 
   return (
     <AppLayout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/clients" component={ClientsList} />
-        <Route path="/clients/:id" component={ClientDetail} />
-        <Route path="/destinations" component={DestinationsList} />
-        <Route path="/packages" component={PackagesList} />
-        <Route path="/bookings" component={BookingsList} />
-        <Route path="/bookings/:id" component={BookingDetail} />
-        <Route path="/payments" component={PaymentsList} />
-        <Route path="/documents" component={DocumentsPage} />
-        <Route path="/finance" component={FinancePage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route path="/employees" component={EmployeesPage} />
-        <Route path="/purchase-orders" component={PurchaseOrdersPage} />
-        <Route path="/suppliers" component={SuppliersPage} />
-        <Route path="/groups" component={GroupsPage} />
-        <Route path="/reminders" component={RemindersPage} />
-        <Route path="/calendar" component={CalendarPage} />
-        <Route path="/messages" component={MessagesPage} />
-        <Route path="/analytics" component={AnalyticsPage} />
-        <Route component={NotFound} />
-      </Switch>
+      <ErrorBoundary>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/clients" component={ClientsList} />
+          <Route path="/clients/:id" component={ClientDetail} />
+          <Route path="/destinations" component={DestinationsList} />
+          <Route path="/packages" component={PackagesList} />
+          <Route path="/bookings" component={BookingsList} />
+          <Route path="/bookings/:id" component={BookingDetail} />
+          <Route path="/payments" component={PaymentsList} />
+          <Route path="/documents" component={DocumentsPage} />
+          <Route path="/finance" component={FinancePage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route path="/employees" component={EmployeesPage} />
+          <Route path="/purchase-orders" component={PurchaseOrdersPage} />
+          <Route path="/suppliers" component={SuppliersPage} />
+          <Route path="/groups" component={GroupsPage} />
+          <Route path="/reminders" component={RemindersPage} />
+          <Route path="/calendar" component={CalendarPage} />
+          <Route path="/messages" component={MessagesPage} />
+          <Route path="/analytics" component={AnalyticsPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </ErrorBoundary>
     </AppLayout>
   );
 }

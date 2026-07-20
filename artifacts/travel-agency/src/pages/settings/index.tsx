@@ -23,7 +23,7 @@ const agencySchema = z.object({
   agencyName: z.string().min(2, "اسم الوكالة مطلوب"),
   agencyNameEn: z.string().min(2, "الاسم بالإنجليزية مطلوب"),
   agencyPhone: z.string().optional(),
-  agencyEmail: z.string().email("بريد إلكتروني غير صحيح").or(z.literal("")).optional(),
+  agencyEmail: z.union([z.string().email("بريد إلكتروني غير صحيح"), z.literal(""), z.undefined()]).optional(),
   agencyAddress: z.string().optional(),
   agencyLogoUrl: z.string().optional(),
   payrollDay: z.coerce.number().min(1).max(31).optional().nullable(),
