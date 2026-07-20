@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useAgency, AGENCY_QUERY_KEY, type AgencySettings } from "@/hooks/use-agency";
@@ -23,7 +23,7 @@ const agencySchema = z.object({
   agencyName: z.string().min(2, "اسم الوكالة مطلوب"),
   agencyNameEn: z.string().min(2, "الاسم بالإنجليزية مطلوب"),
   agencyPhone: z.string().optional(),
-  agencyEmail: z.union([z.string().email("بريد إلكتروني غير صحيح"), z.literal(""), z.undefined()]).optional(),
+  agencyEmail: z.string().optional(),
   agencyAddress: z.string().optional(),
   agencyLogoUrl: z.string().optional(),
   payrollDay: z.coerce.number().min(1).max(31).optional().nullable(),
