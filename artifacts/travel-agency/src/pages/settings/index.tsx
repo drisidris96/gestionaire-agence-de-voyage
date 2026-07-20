@@ -1,34 +1,19 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useAgency, AGENCY_QUERY_KEY, type AgencySettings } from "@/hooks/use-agency";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle
 } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Building2, Phone, Mail, MapPin, Globe, Image as ImageIcon,
   Upload, Loader2, Shield, Lock, CheckCircle2, Banknote
 } from "lucide-react";
-
-const agencySchema = z.object({
-  agencyName: z.string().min(2, "اسم الوكالة مطلوب"),
-  agencyNameEn: z.string().min(2, "الاسم بالإنجليزية مطلوب"),
-  agencyPhone: z.string().optional(),
-  agencyEmail: z.string().optional(),
-  agencyAddress: z.string().optional(),
-  agencyLogoUrl: z.string().optional(),
-  payrollDay: z.coerce.number().min(1).max(31).optional().nullable(),
-});
-type AgencyFormValues = z.infer<typeof agencySchema>;
 
 async function uploadLogoToStorage(file: File): Promise<string> {
   const res = await fetch("/api/storage/uploads/request-url", {
@@ -59,18 +44,27 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const form = useForm<AgencyFormValues>({
-    resolver: zodResolver(agencySchema),
-    values: {
-      agencyName: settings.agencyName,
-      agencyNameEn: settings.agencyNameEn,
-      agencyPhone: settings.agencyPhone ?? "",
-      agencyEmail: settings.agencyEmail ?? "",
-      agencyAddress: settings.agencyAddress ?? "",
-      agencyLogoUrl: settings.agencyLogoUrl ?? "",
-      payrollDay: settings.payrollDay ?? null,
-    },
-  });
+  // Simple controlled form state
+  const [agencyName, setAgencyName] = useState("");
+  const [agencyNameEn, setAgencyNameEn] = useState("");
+  const [agencyPhone, setAgencyPhone] = useState("");
+  const [agencyEmail, setAgencyEmail] = useState("");
+  const [agencyAddress, setAgencyAddress] = useState("");
+  const [agencyLogoUrl, setAgencyLogoUrl] = useState("");
+  const [payrollDay, setPayrollDay] = useState<string>("");
+
+  // Sync from settings once loaded
+  useEffect(() => {
+    if (!isLoading) {
+      setAgencyName(settings.agencyName ?? "");
+      setAgencyNameEn(settings.agencyNameEn ?? "");
+      setAgencyPhone(settings.agencyPhone ?? "");
+      setAgencyEmail(settings.agencyEmail ?? "");
+      setAgencyAddress(settings.agencyAddress ?? "");
+      setAgencyLogoUrl(settings.agencyLogoUrl ?? "");
+      setPayrollDay(settings.payrollDay != null ? String(settings.payrollDay) : "");
+    }
+  }, [isLoading, settings]);
 
   const mutation = useMutation({
     mutationFn: (data: Partial<AgencySettings>) =>
@@ -99,7 +93,7 @@ export default function SettingsPage() {
     setIsUploading(true);
     try {
       const url = await uploadLogoToStorage(file);
-      form.setValue("agencyLogoUrl", url);
+      setAgencyLogoUrl(url);
       toast({ title: "تم رفع الشعار بنجاح" });
     } catch {
       toast({ title: "فشل رفع الشعار، حاول مرة أخرى", variant: "destructive" });
@@ -109,14 +103,25 @@ export default function SettingsPage() {
     }
   };
 
-  const onSubmit = (data: AgencyFormValues) => {
-    mutation.mutate(data as Partial<AgencySettings>);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const day = payrollDay !== "" ? parseInt(payrollDay, 10) : null;
+    mutation.mutate({
+      agencyName,
+      agencyNameEn,
+      agencyPhone,
+      agencyEmail,
+      agencyAddress,
+      agencyLogoUrl,
+      payrollDay: day && !isNaN(day) && day >= 1 && day <= 31 ? day : null,
+    } as Partial<AgencySettings>);
   };
 
-  const currentLogo = logoPreview || settings.agencyLogoUrl || "/logo.jpg";
+  const currentLogo = logoPreview || agencyLogoUrl || settings.agencyLogoUrl || "/logo.jpg";
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">الإعدادات</h1>
@@ -133,7 +138,6 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Read-only notice for non-admin */}
       {!isAdmin && (
         <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
           <Lock className="h-4 w-4 shrink-0" />
@@ -141,206 +145,136 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          {/* Agency Identity Card */}
-          <Card className="border-none shadow-sm mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" /> هوية الوكالة
-              </CardTitle>
-              <CardDescription>
-                {isAdmin ? "اسم الوكالة وشعارها يظهران في جميع المستندات والواجهة." : "بيانات الوكالة الرسمية."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {isLoading ? (
-                <div className="space-y-3">
-                  {Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-                </div>
-              ) : (
-                <>
-                  {/* Logo Section */}
-                  <div className="space-y-3">
-                    <p className="flex items-center gap-2 text-sm font-medium leading-none"><ImageIcon className="h-4 w-4" /> شعار الوكالة</p>
-                    <div className="flex items-start gap-5">
-                      {/* Logo Preview */}
-                      <div className="relative w-32 h-32 rounded-xl border-2 border-dashed overflow-hidden bg-muted flex items-center justify-center shrink-0"
-                        style={isAdmin ? { borderColor: "#C9A227", cursor: "pointer" } : {}}
-                        onClick={() => isAdmin && fileInputRef.current?.click()}>
-                        <img
-                          src={currentLogo}
-                          alt="شعار الوكالة"
-                          className="w-full h-full object-contain"
-                          onError={(e) => { (e.target as HTMLImageElement).src = "/logo.jpg"; }}
-                        />
-                        {isUploading && (
-                          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1">
-                            <Loader2 className="h-6 w-6 text-white animate-spin" />
-                            <span className="text-white text-[10px]">جارٍ الرفع...</span>
-                          </div>
-                        )}
-                        {isAdmin && !isUploading && (
-                          <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
-                            <Upload className="h-6 w-6 text-white" />
-                          </div>
-                        )}
-                      </div>
-
-                      {isAdmin && (
-                        <div className="flex-1 space-y-2">
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleLogoFile(file);
-                              e.target.value = "";
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
-                          >
-                            <Upload className="h-4 w-4" />
-                            رفع شعار جديد
-                          </Button>
-                          <p className="text-xs text-muted-foreground">اضغط على الشعار أو الزر لرفع صورة من الجهاز أو الهاتف. PNG, JPG, SVG مدعوم.</p>
-
-                          <FormField control={form.control} name="agencyLogoUrl" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs text-muted-foreground">أو أدخل رابط الشعار</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="https://..."
-                                  className="h-8 text-xs"
-                                  data-testid="input-logo-url"
-                                  onChange={(e) => {
-                                    field.onChange(e);
-                                    if (e.target.value) setLogoPreview(e.target.value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="agencyName" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" /> اسم الوكالة (عربي) *</FormLabel>
-                        <FormControl>
-                          <Input {...field} disabled={!isAdmin} data-testid="input-agency-name"
-                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField control={form.control} name="agencyNameEn" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Agency Name (English) *</FormLabel>
-                        <FormControl>
-                          <Input {...field} disabled={!isAdmin} dir="ltr" data-testid="input-agency-name-en"
-                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField control={form.control} name="agencyPhone" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> رقم الهاتف</FormLabel>
-                        <FormControl>
-                          <Input {...field} disabled={!isAdmin} dir="ltr" data-testid="input-agency-phone"
-                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField control={form.control} name="agencyEmail" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> البريد الإلكتروني</FormLabel>
-                        <FormControl>
-                          <Input type="email" {...field} disabled={!isAdmin} dir="ltr" data-testid="input-agency-email"
-                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField control={form.control} name="agencyAddress" render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> العنوان</FormLabel>
-                        <FormControl>
-                          <Input {...field} disabled={!isAdmin} data-testid="input-agency-address"
-                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField control={form.control} name="payrollDay" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Banknote className="h-3.5 w-3.5" /> يوم صرف الرواتب (1-31)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={31}
-                            placeholder="مثال: 30"
-                            disabled={!isAdmin}
-                            className={!isAdmin ? "bg-muted cursor-not-allowed" : ""}
-                            value={field.value ?? ""}
-                            onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                  </div>
-
-                  {isAdmin && (
-                    <div className="flex items-center gap-3 pt-2 border-t">
-                      <Button
-                        type="submit"
-                        disabled={mutation.isPending || isUploading}
-                        data-testid="button-save-settings"
-                        className="gap-2"
-                      >
-                        {mutation.isPending ? (
-                          <><Loader2 className="h-4 w-4 animate-spin" /> جارٍ الحفظ...</>
-                        ) : saved ? (
-                          <><CheckCircle2 className="h-4 w-4" /> تم الحفظ</>
-                        ) : (
-                          "حفظ التغييرات"
-                        )}
-                      </Button>
-                      <p className="text-xs text-muted-foreground">
-                        تُطبَّق التغييرات فوراً على الشريط الجانبي وجميع المستندات المطبوعة.
-                      </p>
+      <form onSubmit={handleSubmit}>
+        <Card className="border-none shadow-sm mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" /> هوية الوكالة
+            </CardTitle>
+            <CardDescription>
+              {isAdmin ? "اسم الوكالة وشعارها يظهران في جميع المستندات والواجهة." : "بيانات الوكالة الرسمية."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Logo Section */}
+            <div className="space-y-3">
+              <p className="flex items-center gap-2 text-sm font-medium leading-none">
+                <ImageIcon className="h-4 w-4" /> شعار الوكالة
+              </p>
+              <div className="flex items-start gap-5">
+                <div
+                  className="relative w-32 h-32 rounded-xl border-2 border-dashed overflow-hidden bg-muted flex items-center justify-center shrink-0"
+                  style={isAdmin ? { borderColor: "#C9A227", cursor: "pointer" } : {}}
+                  onClick={() => isAdmin && fileInputRef.current?.click()}
+                >
+                  <img
+                    src={currentLogo}
+                    alt="شعار الوكالة"
+                    className="w-full h-full object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/logo.jpg"; }}
+                  />
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1">
+                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+                      <span className="text-white text-[10px]">جارٍ الرفع...</span>
                     </div>
                   )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </form>
-      </Form>
+                </div>
+
+                {isAdmin && (
+                  <div className="flex-1 space-y-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleLogoFile(file);
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      <Upload className="h-4 w-4" />
+                      رفع شعار جديد
+                    </Button>
+                    <p className="text-xs text-muted-foreground">PNG، JPG، SVG مدعوم.</p>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">أو أدخل رابط الشعار</Label>
+                      <Input
+                        value={agencyLogoUrl}
+                        onChange={e => { setAgencyLogoUrl(e.target.value); if (e.target.value) setLogoPreview(e.target.value); }}
+                        placeholder="https://..."
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" /> اسم الوكالة (عربي) *</Label>
+                <Input value={agencyName} onChange={e => setAgencyName(e.target.value)} disabled={!isAdmin} className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
+              </div>
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Agency Name (English) *</Label>
+                <Input value={agencyNameEn} onChange={e => setAgencyNameEn(e.target.value)} disabled={!isAdmin} dir="ltr" className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
+              </div>
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> رقم الهاتف</Label>
+                <Input value={agencyPhone} onChange={e => setAgencyPhone(e.target.value)} disabled={!isAdmin} dir="ltr" className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
+              </div>
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> البريد الإلكتروني</Label>
+                <Input type="email" value={agencyEmail} onChange={e => setAgencyEmail(e.target.value)} disabled={!isAdmin} dir="ltr" className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <Label className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> العنوان</Label>
+                <Input value={agencyAddress} onChange={e => setAgencyAddress(e.target.value)} disabled={!isAdmin} className={!isAdmin ? "bg-muted cursor-not-allowed" : ""} />
+              </div>
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2"><Banknote className="h-3.5 w-3.5" /> يوم صرف الرواتب (1-31)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={31}
+                  placeholder="مثال: 30"
+                  value={payrollDay}
+                  onChange={e => setPayrollDay(e.target.value)}
+                  disabled={!isAdmin}
+                  className={!isAdmin ? "bg-muted cursor-not-allowed" : ""}
+                />
+              </div>
+            </div>
+
+            {isAdmin && (
+              <div className="flex items-center gap-3 pt-2 border-t">
+                <Button type="submit" disabled={mutation.isPending || isUploading} className="gap-2">
+                  {mutation.isPending ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> جارٍ الحفظ...</>
+                  ) : saved ? (
+                    <><CheckCircle2 className="h-4 w-4" /> تم الحفظ</>
+                  ) : (
+                    "حفظ التغييرات"
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground">تُطبَّق التغييرات فوراً على الشريط الجانبي وجميع المستندات.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </form>
 
       {/* Live Preview */}
       <Card className="border-none shadow-sm">
@@ -360,17 +294,13 @@ export default function SettingsPage() {
                 />
                 <div>
                   <div className="text-lg font-black" style={{ color: "#C9A227" }}>
-                    {form.watch("agencyName") || settings.agencyName}
+                    {agencyName || settings.agencyName}
                   </div>
                   <div className="text-xs tracking-widest text-gray-500 uppercase">
-                    {form.watch("agencyNameEn") || settings.agencyNameEn}
+                    {agencyNameEn || settings.agencyNameEn}
                   </div>
-                  {form.watch("agencyPhone") && (
-                    <div className="text-xs text-gray-500 mt-1">{form.watch("agencyPhone")}</div>
-                  )}
-                  {form.watch("agencyEmail") && (
-                    <div className="text-xs text-gray-500">{form.watch("agencyEmail")}</div>
-                  )}
+                  {agencyPhone && <div className="text-xs text-gray-500 mt-1">{agencyPhone}</div>}
+                  {agencyEmail && <div className="text-xs text-gray-500">{agencyEmail}</div>}
                 </div>
               </div>
               <div className="border-2 rounded-lg px-4 py-2 text-center" style={{ borderColor: "#C9A227" }}>
