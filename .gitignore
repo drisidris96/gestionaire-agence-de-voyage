@@ -2,6 +2,7 @@
 
 # compiled output
 dist
+!artifacts/travel-agency/dist
 tmp
 out-tsc
 *.tsbuildinfo
