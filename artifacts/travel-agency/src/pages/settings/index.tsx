@@ -162,7 +162,7 @@ export default function SettingsPage() {
                 <>
                   {/* Logo Section */}
                   <div className="space-y-3">
-                    <FormLabel className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> شعار الوكالة</FormLabel>
+                    <p className="flex items-center gap-2 text-sm font-medium leading-none"><ImageIcon className="h-4 w-4" /> شعار الوكالة</p>
                     <div className="flex items-start gap-5">
                       {/* Logo Preview */}
                       <div className="relative w-32 h-32 rounded-xl border-2 border-dashed overflow-hidden bg-muted flex items-center justify-center shrink-0"
