@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, getListExpensesQueryKey } from "@workspace/api-client-react";
+import { useListExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, getListExpensesQueryKey, useListBookings } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   TrendingUp, TrendingDown, DollarSign, BarChart3, Plus, MoreHorizontal,
-  Pencil, Trash2, Loader2, AlertCircle
+  Pencil, Trash2, Loader2, AlertCircle, Banknote
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -52,6 +52,17 @@ function categoryAr(cat: string) {
 }
 function categoryColor(cat: string) {
   return EXPENSE_CATEGORIES.find(c => c.value === cat)?.color ?? "#6b7280";
+}
+
+const BOOKING_TYPE_AR: Record<string, string> = {
+  hotel: "فندقي",
+  flight: "طيران",
+  hotel_flight: "فندق + طيران",
+  other: "أخرى",
+};
+function serviceLabel(type?: string, custom?: string | null) {
+  if (type === "other" && custom) return custom;
+  return BOOKING_TYPE_AR[type ?? ""] ?? type ?? "—";
 }
 
 interface FinanceSummary {
@@ -119,6 +130,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function FinancePage() {
   const { data: expenses, isLoading: expLoading } = useListExpenses();
+  const { data: allBookings, isLoading: bookLoading } = useListBookings({});
   const { data: summary, isLoading: summLoading } = useQuery<FinanceSummary>({
     queryKey: ["finance-summary"],
     queryFn: () => fetch("/api/finance/summary").then(r => r.json()),
@@ -183,6 +195,14 @@ export default function FinancePage() {
   const filteredExpenses = expenses?.filter(e =>
     !yearFilter || new Date(e.date).getFullYear() === parseInt(yearFilter)
   );
+
+  const filteredBookings = allBookings?.filter(b =>
+    !yearFilter || new Date(b.createdAt).getFullYear() === parseInt(yearFilter)
+  ) ?? [];
+
+  const totalProfit = filteredBookings.reduce((sum, b) => sum + ((b.totalPrice ?? 0) - (b.serviceCost ?? 0)), 0);
+  const totalRevBookings = filteredBookings.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0);
+  const totalCost = filteredBookings.reduce((sum, b) => sum + (b.serviceCost ?? 0), 0);
 
   const monthlyData = summary?.monthly?.map(m => ({
     ...m,
@@ -287,6 +307,101 @@ export default function FinancePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Profits Table */}
+      <Card className="border-none shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Banknote className="h-5 w-5 text-green-600" /> جدول الأرباح
+            </CardTitle>
+            <CardDescription>ربح كل حجز = المبلغ الإجمالي − التكلفة</CardDescription>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Profit summary chips */}
+            <div className="flex gap-2 text-xs">
+              <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-medium border border-blue-100">
+                إجمالي: {totalRevBookings.toLocaleString()} $
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-red-50 text-red-700 font-medium border border-red-100">
+                تكلفة: {totalCost.toLocaleString()} $
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-green-50 text-green-700 font-semibold border border-green-200">
+                ربح: {totalProfit.toLocaleString()} $
+              </span>
+            </div>
+            <Select value={yearFilter} onValueChange={setYearFilter}>
+              <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>اسم العميل</TableHead>
+                <TableHead>تاريخ الحجز</TableHead>
+                <TableHead>نوع الخدمة</TableHead>
+                <TableHead className="text-left">المبلغ الإجمالي</TableHead>
+                <TableHead className="text-left">التكلفة</TableHead>
+                <TableHead className="text-left">الربح</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bookLoading ? (
+                Array(4).fill(0).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array(6).fill(0).map((__, j) => <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>)}
+                  </TableRow>
+                ))
+              ) : filteredBookings.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    لا توجد حجوزات لهذه السنة.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredBookings.map(b => {
+                  const profit = (b.totalPrice ?? 0) - (b.serviceCost ?? 0);
+                  return (
+                    <TableRow key={b.id}>
+                      <TableCell className="font-medium">{b.clientName ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(b.createdAt), "d MMM yyyy", { locale: ar })}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{serviceLabel(b.bookingType, b.customBookingType)}</Badge>
+                      </TableCell>
+                      <TableCell className="font-semibold text-blue-600">
+                        {(b.totalPrice ?? 0).toLocaleString()} $
+                      </TableCell>
+                      <TableCell className="text-red-500">
+                        {(b.serviceCost ?? 0) > 0 ? `${(b.serviceCost ?? 0).toLocaleString()} $` : "—"}
+                      </TableCell>
+                      <TableCell className={`font-bold ${profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {profit.toLocaleString()} $
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+              {filteredBookings.length > 0 && (
+                <TableRow className="border-t-2 bg-muted/40">
+                  <TableCell colSpan={3} className="font-bold text-sm">المجموع</TableCell>
+                  <TableCell className="font-bold text-blue-600">{totalRevBookings.toLocaleString()} $</TableCell>
+                  <TableCell className="font-bold text-red-500">{totalCost.toLocaleString()} $</TableCell>
+                  <TableCell className={`font-bold text-base ${totalProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                    {totalProfit.toLocaleString()} $
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Expenses Table */}
       <Card className="border-none shadow-sm">

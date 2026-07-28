@@ -3,9 +3,9 @@ import {
   useListEmployees, useCreateEmployee, useUpdateEmployee, useDeleteEmployee,
   useListPayroll, useCreatePayroll, useUpdatePayroll, useDeletePayroll,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { useAgency } from "@/hooks/use-agency";
+import { useAgency, AGENCY_QUERY_KEY } from "@/hooks/use-agency";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Plus, MoreHorizontal, Pencil, Trash2, Users, Printer,
-  FileText, Banknote, CheckCircle2, Clock, Loader2, Phone
+  FileText, Banknote, CheckCircle2, Clock, Loader2, Phone, ShieldCheck, Receipt, Save
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,6 +155,23 @@ export default function EmployeesPage() {
   const createPayroll = useCreatePayroll();
   const updatePayroll = useUpdatePayroll();
   const deletePayroll = useDeletePayroll();
+
+  const [insuranceDayInput, setInsuranceDayInput] = useState<string>(agency.insuranceDay?.toString() ?? "");
+  const [taxDayInput, setTaxDayInput] = useState<string>(agency.taxDay?.toString() ?? "");
+
+  const saveDaysMutation = useMutation({
+    mutationFn: (data: { insuranceDay?: number | null; taxDay?: number | null }) =>
+      fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then(r => r.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AGENCY_QUERY_KEY });
+      toast({ title: "تم حفظ الإعدادات" });
+    },
+    onError: () => toast({ title: "حدث خطأ أثناء الحفظ", variant: "destructive" }),
+  });
 
   const [tab, setTab] = useState<"employees" | "payroll">("employees");
   const [isEmpOpen, setIsEmpOpen] = useState(false);
