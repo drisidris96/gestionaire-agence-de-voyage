@@ -487,6 +487,31 @@ paths:
                 $ref: "#/components/schemas/Payment"
         "404":
           description: Not found
+    patch:
+      operationId: updatePayment
+      tags: [payments]
+      summary: Update a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePaymentBody"
+      responses:
+        "200":
+          description: Payment updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "404":
+          description: Not found
     delete:
       operationId: deletePayment
       tags: [payments]
@@ -1661,6 +1686,27 @@ components:
           enum: [cash, card, bank_transfer, cheque]
         notes:
           type: ["string", "null"]
+
+    UpdatePaymentBody:
+      type: object
+      properties:
+        amount:
+          type: number
+        paymentDate:
+          type: string
+          format: date-time
+        method:
+          type: string
+          enum: [cash, card, bank_transfer, cheque]
+        notes:
+          type: ["string", "null"]
+
+    UpdatePaymentParams:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
 
     # ─── Dashboard ───────────────────────────────────────────────────────────
     DashboardStats:

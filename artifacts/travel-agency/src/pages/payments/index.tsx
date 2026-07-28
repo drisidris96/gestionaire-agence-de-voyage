@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListPayments } from "@workspace/api-client-react";
+import { useListPayments, useUpdatePayment, useDeletePayment, getListPaymentsQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { CreditCard, Search, Download, TrendingUp, CheckCircle, Clock } from "lucide-react";
+import { CreditCard, Search, Download, TrendingUp, CheckCircle, Clock, Pencil, Trash2, MoreHorizontal, Loader2 } from "lucide-react";
 import { downloadCSV } from "@/lib/export-csv";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,11 +17,87 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { methodAr } from "@/lib/i18n";
+
+const PAYMENT_METHODS = [
+  { value: "cash",          label: "نقداً" },
+  { value: "card",          label: "بطاقة بنكية" },
+  { value: "bank_transfer", label: "تحويل بنكي" },
+  { value: "cheque",        label: "شيك" },
+];
+
+const editSchema = z.object({
+  amount:      z.coerce.number().min(0.01, "المبلغ يجب أن يكون موجباً"),
+  paymentDate: z.string().min(1, "التاريخ مطلوب"),
+  method:      z.enum(["cash", "card", "bank_transfer", "cheque"]),
+  notes:       z.string().optional(),
+});
+type EditForm = z.infer<typeof editSchema>;
+
+const QUERY_KEY = getListPaymentsQueryKey();
 
 export default function PaymentsPage() {
   const [search, setSearch] = useState("");
+  const [editTarget, setEditTarget] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
   const { data: payments, isLoading } = useListPayments();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const updatePayment = useUpdatePayment();
+  const deletePayment = useDeletePayment();
+
+  const form = useForm<EditForm>({
+    resolver: zodResolver(editSchema),
+    defaultValues: { amount: 0, paymentDate: "", method: "cash", notes: "" },
+  });
+
+  const openEdit = (payment: any) => {
+    setEditTarget(payment);
+    form.reset({
+      amount:      payment.amount,
+      paymentDate: payment.paymentDate?.split("T")[0] ?? "",
+      method:      payment.method,
+      notes:       payment.notes ?? "",
+    });
+  };
+
+  const closeEdit = () => { setEditTarget(null); form.reset(); };
+
+  const onSubmit = (data: EditForm) => {
+    updatePayment.mutate(
+      { id: editTarget.id, data: { ...data, paymentDate: new Date(data.paymentDate).toISOString() } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+          toast({ title: "تم تعديل الدفعة بنجاح" });
+          closeEdit();
+        },
+        onError: () => toast({ title: "حدث خطأ أثناء التعديل", variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    deletePayment.mutate(
+      { id: deleteTarget.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+          toast({ title: "تم حذف الدفعة" });
+          setDeleteTarget(null);
+        },
+        onError: () => toast({ title: "حدث خطأ أثناء الحذف", variant: "destructive" }),
+      }
+    );
+  };
 
   const filteredPayments = payments?.filter(p =>
     !search ||
@@ -24,14 +105,12 @@ export default function PaymentsPage() {
     p.bookingId.toString().includes(search)
   );
 
-  const totalCollected = filteredPayments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+  const totalCollected    = filteredPayments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
   const totalBookingAmount = payments
-    ? [...new Map(payments.map(p => [p.bookingId, p])).values()]
-        .reduce((sum, p) => sum + (p.totalPrice ?? 0), 0)
+    ? [...new Map(payments.map(p => [p.bookingId, p])).values()].reduce((sum, p) => sum + (p.totalPrice ?? 0), 0)
     : 0;
   const totalRemaining = payments
-    ? [...new Map(payments.map(p => [p.bookingId, p])).values()]
-        .reduce((sum, p) => sum + (p.remainingAmount ?? 0), 0)
+    ? [...new Map(payments.map(p => [p.bookingId, p])).values()].reduce((sum, p) => sum + (p.remainingAmount ?? 0), 0)
     : 0;
 
   return (
@@ -41,7 +120,6 @@ export default function PaymentsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">المدفوعات</h1>
           <p className="text-muted-foreground mt-1">عرض جميع المعاملات المالية.</p>
         </div>
-
         <div className="flex items-center gap-2">
           <div className="relative w-full sm:w-64">
             <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -58,7 +136,9 @@ export default function PaymentsPage() {
               ["#", "التاريخ", "العميل", "رقم الحجز", "المبلغ المدفوع", "الإجمالي", "المتبقي", "طريقة الدفع", "ملاحظات"],
               (filteredPayments ?? []).map(p => [p.id, p.paymentDate, p.clientName ?? "", p.bookingId, p.amount, p.totalPrice ?? 0, p.remainingAmount ?? 0, p.method, p.notes ?? ""])
             );
-          }} className="gap-1.5 shrink-0"><Download className="h-4 w-4" /> CSV</Button>
+          }} className="gap-1.5 shrink-0">
+            <Download className="h-4 w-4" /> CSV
+          </Button>
         </div>
       </div>
 
@@ -69,9 +149,7 @@ export default function PaymentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">إجمالي الحجوزات</p>
-                <p className="text-2xl font-bold text-primary mt-1">
-                  {isLoading ? "..." : totalBookingAmount.toLocaleString()} $
-                </p>
+                <p className="text-2xl font-bold text-primary mt-1">{isLoading ? "..." : totalBookingAmount.toLocaleString()} $</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-primary" />
@@ -84,9 +162,7 @@ export default function PaymentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">إجمالي المدفوع</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
-                  {isLoading ? "..." : totalCollected.toLocaleString()} $
-                </p>
+                <p className="text-2xl font-bold text-green-600 mt-1">{isLoading ? "..." : totalCollected.toLocaleString()} $</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-green-600" />
@@ -99,9 +175,7 @@ export default function PaymentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">إجمالي المتبقي</p>
-                <p className="text-2xl font-bold text-amber-600 mt-1">
-                  {isLoading ? "..." : totalRemaining.toLocaleString()} $
-                </p>
+                <p className="text-2xl font-bold text-amber-600 mt-1">{isLoading ? "..." : totalRemaining.toLocaleString()} $</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-amber-600" />
@@ -111,6 +185,7 @@ export default function PaymentsPage() {
         </Card>
       </div>
 
+      {/* Table */}
       <div className="border rounded-md bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
@@ -124,20 +199,21 @@ export default function PaymentsPage() {
               <TableHead>المتبقي</TableHead>
               <TableHead>طريقة الدفع</TableHead>
               <TableHead>ملاحظات</TableHead>
+              <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array(6).fill(0).map((_, i) => (
                 <TableRow key={i}>
-                  {Array(9).fill(0).map((__, j) => (
+                  {Array(10).fill(0).map((__, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : filteredPayments?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                   <CreditCard className="h-8 w-8 mx-auto mb-3 opacity-20" />
                   لا توجد مدفوعات.
                 </TableCell>
@@ -147,12 +223,8 @@ export default function PaymentsPage() {
                 const remaining = payment.remainingAmount ?? 0;
                 return (
                   <TableRow key={payment.id} className="group" data-testid={`row-payment-${payment.id}`}>
-                    <TableCell>
-                      {format(new Date(payment.paymentDate), 'd MMM yyyy', { locale: ar })}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {payment.clientName}
-                    </TableCell>
+                    <TableCell>{format(new Date(payment.paymentDate), 'd MMM yyyy', { locale: ar })}</TableCell>
+                    <TableCell className="font-medium">{payment.clientName}</TableCell>
                     <TableCell>
                       <Link href={`/bookings/${payment.bookingId}`} className="font-mono text-sm text-primary hover:underline">
                         #{payment.bookingId}
@@ -161,23 +233,35 @@ export default function PaymentsPage() {
                     <TableCell className="font-semibold text-green-600" data-testid={`text-amount-${payment.id}`}>
                       {payment.amount.toLocaleString()} $
                     </TableCell>
-                    <TableCell className="font-semibold text-primary">
-                      {(payment.totalPrice ?? 0).toLocaleString()} $
-                    </TableCell>
-                    <TableCell className="font-semibold text-blue-600">
-                      {(payment.paidAmount ?? 0).toLocaleString()} $
-                    </TableCell>
+                    <TableCell className="font-semibold text-primary">{(payment.totalPrice ?? 0).toLocaleString()} $</TableCell>
+                    <TableCell className="font-semibold text-blue-600">{(payment.paidAmount ?? 0).toLocaleString()} $</TableCell>
                     <TableCell className={`font-semibold ${remaining > 0 ? "text-amber-600" : "text-green-600"}`}>
                       {remaining.toLocaleString()} $
                       {remaining === 0 && <span className="mr-1 text-xs">✓</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {methodAr(payment.method)}
-                      </Badge>
+                      <Badge variant="outline">{methodAr(payment.method)}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground max-w-[160px] truncate">
                       {payment.notes || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-40">
+                          <DropdownMenuItem onClick={() => openEdit(payment)} className="cursor-pointer">
+                            <Pencil className="ml-2 h-4 w-4" /> تعديل
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setDeleteTarget(payment)} className="text-destructive focus:text-destructive cursor-pointer">
+                            <Trash2 className="ml-2 h-4 w-4" /> حذف
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 );
@@ -186,6 +270,96 @@ export default function PaymentsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) closeEdit(); }}>
+        <DialogContent dir="rtl" className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>تعديل الدفعة #{editTarget?.id}</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField control={form.control} name="amount" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>المبلغ المدفوع ($) *</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="paymentDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>تاريخ الدفع *</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="method" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>طريقة الدفع *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PAYMENT_METHODS.map(m => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="notes" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ملاحظات</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} className="h-20" placeholder="ملاحظة اختيارية..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <DialogFooter className="gap-2">
+                <Button type="button" variant="outline" onClick={closeEdit}>إلغاء</Button>
+                <Button type="submit" disabled={updatePayment.isPending}>
+                  {updatePayment.isPending
+                    ? <><Loader2 className="h-4 w-4 ml-2 animate-spin" /> جارٍ الحفظ...</>
+                    : "حفظ التغييرات"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف الدفعة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف دفعة <strong>{deleteTarget?.clientName}</strong> بمبلغ <strong>{deleteTarget?.amount?.toLocaleString()} $</strong>؟
+              سيتم خصم هذا المبلغ من المدفوعات تلقائياً.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row-reverse gap-2">
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletePayment.isPending ? "جارٍ الحذف..." : "نعم، احذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

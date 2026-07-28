@@ -65,6 +65,7 @@ import type {
   UpdateExpenseBody,
   UpdateGroupBody,
   UpdatePackageBody,
+  UpdatePaymentBody,
   UpdatePayrollBody,
   UpdatePurchaseOrderBody,
   UpdateReminderBody,
@@ -2156,6 +2157,93 @@ export function useGetPayment<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Update a payment
+ */
+export const getUpdatePaymentUrl = (id: number) => {
+  return `/api/payments/${id}`;
+};
+
+export const updatePayment = async (
+  id: number,
+  updatePaymentBody: UpdatePaymentBody,
+  options?: RequestInit,
+): Promise<Payment> => {
+  return customFetch<Payment>(getUpdatePaymentUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updatePaymentBody),
+  });
+};
+
+export const getUpdatePaymentMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePayment>>,
+    TError,
+    { id: number; data: BodyType<UpdatePaymentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePayment>>,
+  TError,
+  { id: number; data: BodyType<UpdatePaymentBody> },
+  TContext
+> => {
+  const mutationKey = ["updatePayment"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePayment>>,
+    { id: number; data: BodyType<UpdatePaymentBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updatePayment(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdatePaymentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updatePayment>>
+>;
+export type UpdatePaymentMutationBody = BodyType<UpdatePaymentBody>;
+export type UpdatePaymentMutationError = ErrorType<void>;
+
+/**
+ * @summary Update a payment
+ */
+export const useUpdatePayment = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePayment>>,
+    TError,
+    { id: number; data: BodyType<UpdatePaymentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePayment>>,
+  TError,
+  { id: number; data: BodyType<UpdatePaymentBody> },
+  TContext
+> => {
+  return useMutation(getUpdatePaymentMutationOptions(options));
+};
 
 /**
  * @summary Delete a payment

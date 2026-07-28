@@ -473,6 +473,34 @@ export const GetPaymentResponse = zod.object({
 });
 
 /**
+ * @summary Update a payment
+ */
+export const UpdatePaymentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePaymentBody = zod.object({
+  amount: zod.number().optional(),
+  paymentDate: zod.coerce.date().optional(),
+  method: zod.enum(["cash", "card", "bank_transfer", "cheque"]).optional(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdatePaymentResponse = zod.object({
+  id: zod.number(),
+  bookingId: zod.number(),
+  clientName: zod.string().nullish(),
+  amount: zod.number(),
+  totalPrice: zod.number().optional(),
+  paidAmount: zod.number().optional(),
+  remainingAmount: zod.number().optional(),
+  paymentDate: zod.coerce.date(),
+  method: zod.enum(["cash", "card", "bank_transfer", "cheque"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
  * @summary Delete a payment
  */
 export const DeletePaymentParams = zod.object({

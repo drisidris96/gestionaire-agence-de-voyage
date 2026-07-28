@@ -4,6 +4,8 @@ import { db, paymentsTable, bookingsTable, clientsTable } from "@workspace/db";
 import {
   ListPaymentsQueryParams,
   CreatePaymentBody,
+  UpdatePaymentBody,
+  UpdatePaymentParams,
   GetPaymentParams,
   DeletePaymentParams,
   ListPaymentsResponse,
@@ -101,6 +103,44 @@ router.get("/payments/:id", async (req, res): Promise<void> => {
   if (!payment) {
     res.status(404).json({ error: "Payment not found" });
     return;
+  }
+
+  const enriched = await enrichPayment(payment);
+  res.json(GetPaymentResponse.parse(enriched));
+});
+
+router.patch("/payments/:id", async (req, res): Promise<void> => {
+  const params = UpdatePaymentParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+
+  const parsed = UpdatePaymentBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+
+  const [existing] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, params.data.id));
+  if (!existing) { res.status(404).json({ error: "Payment not found" }); return; }
+
+  const oldAmount = Number(existing.amount);
+  const newAmount = parsed.data.amount ?? oldAmount;
+  const diff = newAmount - oldAmount;
+
+  const updateData: Record<string, unknown> = {};
+  if (parsed.data.amount !== undefined) updateData.amount = String(parsed.data.amount);
+  if (parsed.data.paymentDate !== undefined) updateData.paymentDate = parsed.data.paymentDate;
+  if (parsed.data.method !== undefined) updateData.method = parsed.data.method;
+  if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
+
+  const [payment] = await db.update(paymentsTable)
+    .set(updateData)
+    .where(eq(paymentsTable.id, params.data.id))
+    .returning();
+
+  if (diff !== 0) {
+    await db.update(bookingsTable)
+      .set({
+        paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} + ${String(diff)})`,
+        updatedAt: new Date(),
+      })
+      .where(eq(bookingsTable.id, existing.bookingId));
   }
 
   const enriched = await enrichPayment(payment);

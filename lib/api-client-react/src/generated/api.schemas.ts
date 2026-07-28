@@ -309,6 +309,28 @@ export interface CreatePaymentBody {
   notes?: string | null;
 }
 
+export type UpdatePaymentBodyMethod =
+  (typeof UpdatePaymentBodyMethod)[keyof typeof UpdatePaymentBodyMethod];
+
+export const UpdatePaymentBodyMethod = {
+  cash: "cash",
+  card: "card",
+  bank_transfer: "bank_transfer",
+  cheque: "cheque",
+} as const;
+
+export interface UpdatePaymentBody {
+  amount?: number;
+  paymentDate?: string;
+  method?: UpdatePaymentBodyMethod;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface UpdatePaymentParams {
+  id: number;
+}
+
 export interface DashboardStats {
   totalClients: number;
   totalBookings: number;
