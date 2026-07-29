@@ -327,6 +327,7 @@ export interface UpdatePaymentBody {
   clientNameOverride?: string | null;
   /** @nullable */
   notes?: string | null;
+  bookingId?: number;
 }
 
 export interface UpdatePaymentParams {

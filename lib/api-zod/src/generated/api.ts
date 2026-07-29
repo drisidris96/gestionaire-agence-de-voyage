@@ -485,6 +485,7 @@ export const UpdatePaymentBody = zod.object({
   method: zod.enum(["cash", "card", "bank_transfer", "cheque"]).optional(),
   clientNameOverride: zod.string().nullish(),
   notes: zod.string().nullish(),
+  bookingId: zod.number().optional(),
 });
 
 export const UpdatePaymentResponse = zod.object({

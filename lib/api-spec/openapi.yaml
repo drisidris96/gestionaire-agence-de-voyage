@@ -1702,6 +1702,8 @@ components:
           type: ["string", "null"]
         notes:
           type: ["string", "null"]
+        bookingId:
+          type: integer
 
     UpdatePaymentParams:
       type: object

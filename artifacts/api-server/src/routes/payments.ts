@@ -121,7 +121,14 @@ router.patch("/payments/:id", async (req, res): Promise<void> => {
 
   const oldAmount = Number(existing.amount);
   const newAmount = parsed.data.amount ?? oldAmount;
-  const diff = newAmount - oldAmount;
+  const newBookingId = parsed.data.bookingId ?? existing.bookingId;
+  const bookingChanged = newBookingId !== existing.bookingId;
+
+  // Validate new booking exists if changed
+  if (bookingChanged) {
+    const [newBooking] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, newBookingId));
+    if (!newBooking) { res.status(404).json({ error: "Booking not found" }); return; }
+  }
 
   const updateData: Record<string, unknown> = {};
   if (parsed.data.amount !== undefined) updateData.amount = String(parsed.data.amount);
@@ -129,13 +136,24 @@ router.patch("/payments/:id", async (req, res): Promise<void> => {
   if (parsed.data.method !== undefined) updateData.method = parsed.data.method;
   if (parsed.data.clientNameOverride !== undefined) updateData.clientNameOverride = parsed.data.clientNameOverride;
   if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
+  if (parsed.data.bookingId !== undefined) updateData.bookingId = parsed.data.bookingId;
 
   const [payment] = await db.update(paymentsTable)
     .set(updateData)
     .where(eq(paymentsTable.id, params.data.id))
     .returning();
 
-  if (diff !== 0) {
+  if (bookingChanged) {
+    // Remove old amount from old booking
+    await db.update(bookingsTable)
+      .set({ paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} - ${String(oldAmount)})`, updatedAt: new Date() })
+      .where(eq(bookingsTable.id, existing.bookingId));
+    // Add new amount to new booking
+    await db.update(bookingsTable)
+      .set({ paidAmount: sql`${bookingsTable.paidAmount} + ${String(newAmount)}`, updatedAt: new Date() })
+      .where(eq(bookingsTable.id, newBookingId));
+  } else if (newAmount !== oldAmount) {
+    const diff = newAmount - oldAmount;
     await db.update(bookingsTable)
       .set({
         paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} + ${String(diff)})`,

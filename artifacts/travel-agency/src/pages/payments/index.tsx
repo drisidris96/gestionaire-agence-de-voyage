@@ -33,6 +33,7 @@ const PAYMENT_METHODS = [
 ];
 
 const editSchema = z.object({
+  bookingId:           z.coerce.number().int().min(1, "رقم الحجز مطلوب"),
   amount:              z.coerce.number().min(0.01, "المبلغ يجب أن يكون موجباً"),
   paymentDate:         z.string().min(1, "التاريخ مطلوب"),
   method:              z.enum(["cash", "card", "bank_transfer", "cheque"]),
@@ -56,12 +57,13 @@ export default function PaymentsPage() {
 
   const form = useForm<EditForm>({
     resolver: zodResolver(editSchema),
-    defaultValues: { amount: 0, paymentDate: "", method: "cash", clientNameOverride: "", notes: "" },
+    defaultValues: { bookingId: 0, amount: 0, paymentDate: "", method: "cash", clientNameOverride: "", notes: "" },
   });
 
   const openEdit = (payment: any) => {
     setEditTarget(payment);
     form.reset({
+      bookingId:          payment.bookingId,
       amount:             payment.amount,
       paymentDate:        payment.paymentDate?.split("T")[0] ?? "",
       method:             payment.method,
@@ -281,6 +283,16 @@ export default function PaymentsPage() {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField control={form.control} name="bookingId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>رقم الحجز *</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="clientNameOverride" render={({ field }) => (
                 <FormItem>
                   <FormLabel>اسم العميل</FormLabel>
