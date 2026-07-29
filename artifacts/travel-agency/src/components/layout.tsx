@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut, FileText, TrendingUp, UserCog, ShoppingCart, Building2, UsersRound, Bell, CalendarDays, MessageSquare, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, Package, BookOpenCheck, CreditCard, Settings, LogOut, FileText, TrendingUp, UserCog, ShoppingCart, Building2, UsersRound, Bell, CalendarDays, MessageSquare, BarChart3, PiggyBank } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,6 +18,7 @@ const navigation = [
 const financeNavigation = [
   { name: "المستندات المالية", href: "/documents", icon: FileText },
   { name: "المالية والأرباح", href: "/finance", icon: TrendingUp },
+  { name: "الاستثمار", href: "/investments", icon: PiggyBank },
   { name: "طلبيات الشراء", href: "/purchase-orders", icon: ShoppingCart },
   { name: "الإعدادات", href: "/settings", icon: Settings },
 ];

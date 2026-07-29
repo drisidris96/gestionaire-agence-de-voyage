@@ -15,6 +15,7 @@ import purchaseOrdersRouter from "./purchase-orders";
 import suppliersRouter from "./suppliers";
 import groupsRouter from "./groups";
 import remindersRouter from "./reminders";
+import investmentsRouter from "./investments";
 
 const router: IRouter = Router();
 
@@ -34,5 +35,6 @@ router.use(purchaseOrdersRouter);
 router.use(suppliersRouter);
 router.use(groupsRouter);
 router.use(remindersRouter);
+router.use(investmentsRouter);
 
 export default router;
