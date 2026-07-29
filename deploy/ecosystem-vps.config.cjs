@@ -10,9 +10,9 @@ module.exports = {
       max_memory_restart: "500M",
       env: {
         NODE_ENV: "production",
-        PORT: "3000",
+        PORT: "8080",
       },
-      env_file: "/var/www/travel/api/.env",
+      env_file: "/var/www/travel/.env",
       error_file: "/var/log/travel/api-error.log",
       out_file: "/var/log/travel/api-out.log",
       time: true,

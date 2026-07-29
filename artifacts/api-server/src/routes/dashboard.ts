@@ -63,6 +63,7 @@ router.get("/dashboard/recent-bookings", async (_req, res): Promise<void> => {
       packageName: pkgRow?.name ?? null,
       destinationName: destName,
       totalPrice: Number(b.totalPrice),
+      serviceCost: Number(b.serviceCost ?? 0),
       paidAmount: Number(paidRow?.total ?? 0),
     };
   }));
