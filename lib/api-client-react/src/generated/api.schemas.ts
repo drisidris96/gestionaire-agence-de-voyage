@@ -328,6 +328,8 @@ export interface UpdatePaymentBody {
   /** @nullable */
   notes?: string | null;
   bookingId?: number;
+  bookingTotalPrice?: number;
+  bookingServiceCost?: number;
 }
 
 export interface UpdatePaymentParams {

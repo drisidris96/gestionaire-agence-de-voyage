@@ -162,6 +162,14 @@ router.patch("/payments/:id", async (req, res): Promise<void> => {
       .where(eq(bookingsTable.id, existing.bookingId));
   }
 
+  // Update booking totalPrice / serviceCost if provided
+  const bookingUpdate: Record<string, unknown> = { updatedAt: new Date() };
+  if (parsed.data.bookingTotalPrice !== undefined) bookingUpdate.totalPrice = String(parsed.data.bookingTotalPrice);
+  if (parsed.data.bookingServiceCost !== undefined) bookingUpdate.serviceCost = String(parsed.data.bookingServiceCost);
+  if (Object.keys(bookingUpdate).length > 1) {
+    await db.update(bookingsTable).set(bookingUpdate).where(eq(bookingsTable.id, newBookingId));
+  }
+
   const enriched = await enrichPayment(payment);
   res.json(GetPaymentResponse.parse(enriched));
 });

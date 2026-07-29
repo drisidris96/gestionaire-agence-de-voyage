@@ -34,6 +34,8 @@ const PAYMENT_METHODS = [
 
 const editSchema = z.object({
   bookingId:           z.coerce.number().int().min(1, "رقم الحجز مطلوب"),
+  bookingTotalPrice:   z.coerce.number().min(0, "المبلغ الإجمالي يجب أن يكون موجباً").optional(),
+  bookingServiceCost:  z.coerce.number().min(0, "سعر الخدمة يجب أن يكون موجباً").optional(),
   amount:              z.coerce.number().min(0.01, "المبلغ يجب أن يكون موجباً"),
   paymentDate:         z.string().min(1, "التاريخ مطلوب"),
   method:              z.enum(["cash", "card", "bank_transfer", "cheque"]),
@@ -57,13 +59,15 @@ export default function PaymentsPage() {
 
   const form = useForm<EditForm>({
     resolver: zodResolver(editSchema),
-    defaultValues: { bookingId: 0, amount: 0, paymentDate: "", method: "cash", clientNameOverride: "", notes: "" },
+    defaultValues: { bookingId: 0, bookingTotalPrice: 0, bookingServiceCost: 0, amount: 0, paymentDate: "", method: "cash", clientNameOverride: "", notes: "" },
   });
 
   const openEdit = (payment: any) => {
     setEditTarget(payment);
     form.reset({
       bookingId:          payment.bookingId,
+      bookingTotalPrice:  payment.totalPrice ?? 0,
+      bookingServiceCost: 0,
       amount:             payment.amount,
       paymentDate:        payment.paymentDate?.split("T")[0] ?? "",
       method:             payment.method,
@@ -288,6 +292,26 @@ export default function PaymentsPage() {
                   <FormLabel>رقم الحجز *</FormLabel>
                   <FormControl>
                     <Input type="number" min="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="bookingTotalPrice" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>المبلغ الإجمالي للحجز ($)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="bookingServiceCost" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>سعر الخدمة / التكلفة ($)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

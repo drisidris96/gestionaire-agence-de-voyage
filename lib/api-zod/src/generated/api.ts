@@ -486,6 +486,8 @@ export const UpdatePaymentBody = zod.object({
   clientNameOverride: zod.string().nullish(),
   notes: zod.string().nullish(),
   bookingId: zod.number().optional(),
+  bookingTotalPrice: zod.number().optional(),
+  bookingServiceCost: zod.number().optional(),
 });
 
 export const UpdatePaymentResponse = zod.object({
