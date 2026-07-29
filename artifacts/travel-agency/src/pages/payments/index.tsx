@@ -273,12 +273,13 @@ export default function PaymentsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) closeEdit(); }}>
-        <DialogContent dir="rtl" className="max-w-md">
+        <DialogContent dir="rtl" className="max-w-md max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>تعديل الدفعة #{editTarget?.id}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+            <div className="overflow-y-auto flex-1 space-y-4 px-1 pb-2">
               <FormField control={form.control} name="bookingId" render={({ field }) => (
                 <FormItem>
                   <FormLabel>رقم الحجز *</FormLabel>
@@ -366,7 +367,8 @@ export default function PaymentsPage() {
                 </FormItem>
               )} />
 
-              <DialogFooter className="gap-2">
+              </div>
+              <DialogFooter className="gap-2 pt-2 border-t">
                 <Button type="button" variant="outline" onClick={closeEdit}>إلغاء</Button>
                 <Button type="submit" disabled={updatePayment.isPending}>
                   {updatePayment.isPending
