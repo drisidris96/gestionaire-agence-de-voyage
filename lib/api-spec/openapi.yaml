@@ -1698,6 +1698,8 @@ components:
         method:
           type: string
           enum: [cash, card, bank_transfer, cheque]
+        clientNameOverride:
+          type: ["string", "null"]
         notes:
           type: ["string", "null"]
 

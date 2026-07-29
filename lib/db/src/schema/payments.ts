@@ -8,6 +8,7 @@ export const paymentsTable = pgTable("payments", {
   amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
   paymentDate: timestamp("payment_date", { withTimezone: true }).notNull().defaultNow(),
   method: text("method").notNull().default("cash"),
+  clientNameOverride: text("client_name_override"),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

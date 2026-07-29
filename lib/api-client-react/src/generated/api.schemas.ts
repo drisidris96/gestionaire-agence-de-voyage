@@ -324,6 +324,8 @@ export interface UpdatePaymentBody {
   paymentDate?: string;
   method?: UpdatePaymentBodyMethod;
   /** @nullable */
+  clientNameOverride?: string | null;
+  /** @nullable */
   notes?: string | null;
 }
 

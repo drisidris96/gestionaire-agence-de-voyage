@@ -483,6 +483,7 @@ export const UpdatePaymentBody = zod.object({
   amount: zod.number().optional(),
   paymentDate: zod.coerce.date().optional(),
   method: zod.enum(["cash", "card", "bank_transfer", "cheque"]).optional(),
+  clientNameOverride: zod.string().nullish(),
   notes: zod.string().nullish(),
 });
 

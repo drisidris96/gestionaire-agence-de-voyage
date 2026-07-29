@@ -28,7 +28,7 @@ async function enrichPayment(p: typeof paymentsTable.$inferSelect) {
   return {
     ...p,
     amount: Number(p.amount),
-    clientName,
+    clientName: p.clientNameOverride ?? clientName,
     totalPrice,
     paidAmount,
     remainingAmount: totalPrice - paidAmount,
@@ -127,6 +127,7 @@ router.patch("/payments/:id", async (req, res): Promise<void> => {
   if (parsed.data.amount !== undefined) updateData.amount = String(parsed.data.amount);
   if (parsed.data.paymentDate !== undefined) updateData.paymentDate = parsed.data.paymentDate;
   if (parsed.data.method !== undefined) updateData.method = parsed.data.method;
+  if (parsed.data.clientNameOverride !== undefined) updateData.clientNameOverride = parsed.data.clientNameOverride;
   if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
 
   const [payment] = await db.update(paymentsTable)

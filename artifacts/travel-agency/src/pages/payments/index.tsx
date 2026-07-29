@@ -33,10 +33,11 @@ const PAYMENT_METHODS = [
 ];
 
 const editSchema = z.object({
-  amount:      z.coerce.number().min(0.01, "المبلغ يجب أن يكون موجباً"),
-  paymentDate: z.string().min(1, "التاريخ مطلوب"),
-  method:      z.enum(["cash", "card", "bank_transfer", "cheque"]),
-  notes:       z.string().optional(),
+  amount:              z.coerce.number().min(0.01, "المبلغ يجب أن يكون موجباً"),
+  paymentDate:         z.string().min(1, "التاريخ مطلوب"),
+  method:              z.enum(["cash", "card", "bank_transfer", "cheque"]),
+  clientNameOverride:  z.string().optional(),
+  notes:               z.string().optional(),
 });
 type EditForm = z.infer<typeof editSchema>;
 
@@ -55,16 +56,17 @@ export default function PaymentsPage() {
 
   const form = useForm<EditForm>({
     resolver: zodResolver(editSchema),
-    defaultValues: { amount: 0, paymentDate: "", method: "cash", notes: "" },
+    defaultValues: { amount: 0, paymentDate: "", method: "cash", clientNameOverride: "", notes: "" },
   });
 
   const openEdit = (payment: any) => {
     setEditTarget(payment);
     form.reset({
-      amount:      payment.amount,
-      paymentDate: payment.paymentDate?.split("T")[0] ?? "",
-      method:      payment.method,
-      notes:       payment.notes ?? "",
+      amount:             payment.amount,
+      paymentDate:        payment.paymentDate?.split("T")[0] ?? "",
+      method:             payment.method,
+      clientNameOverride: payment.clientName ?? "",
+      notes:              payment.notes ?? "",
     });
   };
 
@@ -279,6 +281,16 @@ export default function PaymentsPage() {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField control={form.control} name="clientNameOverride" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>اسم العميل</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="اسم العميل..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="amount" render={({ field }) => (
                 <FormItem>
                   <FormLabel>المبلغ المدفوع ($) *</FormLabel>
