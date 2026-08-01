@@ -18,7 +18,7 @@ const navigation = [
 const financeNavigation = [
   { name: "المستندات المالية", href: "/documents", icon: FileText },
   { name: "المالية والأرباح", href: "/finance", icon: TrendingUp },
-  { name: "الاستثمار", href: "/investments", icon: PiggyBank },
+  { name: "الادخار", href: "/investments", icon: PiggyBank },
   { name: "طلبيات الشراء", href: "/purchase-orders", icon: ShoppingCart },
   { name: "الإعدادات", href: "/settings", icon: Settings },
 ];
