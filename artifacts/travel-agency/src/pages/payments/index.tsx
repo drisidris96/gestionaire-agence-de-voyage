@@ -79,15 +79,32 @@ export default function PaymentsPage() {
   const closeEdit = () => { setEditTarget(null); form.reset(); };
 
   const onSubmit = (data: EditForm) => {
+    const payload: EditForm = {
+      ...data,
+      paymentDate: new Date(data.paymentDate).toISOString(),
+    };
+    // Only send bookingTotalPrice / bookingServiceCost if they differ from current values
+    const tpChanged = data.bookingTotalPrice !== undefined && data.bookingTotalPrice !== (editTarget?.totalPrice ?? 0);
+    const scChanged = data.bookingServiceCost !== undefined && data.bookingServiceCost !== (editTarget?.serviceCost ?? 0);
+    if (!tpChanged) delete payload.bookingTotalPrice;
+    if (!scChanged) delete payload.bookingServiceCost;
+
     updatePayment.mutate(
-      { id: editTarget.id, data: { ...data, paymentDate: new Date(data.paymentDate).toISOString() } },
+      { id: editTarget.id, data: payload },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEY });
           toast({ title: "تم تعديل الدفعة بنجاح" });
           closeEdit();
         },
-        onError: () => toast({ title: "حدث خطأ أثناء التعديل", variant: "destructive" }),
+        onError: (err: any) => {
+          const serverMsg = err?.data?.error || err?.message || "";
+          toast({
+            title: "حدث خطأ أثناء التعديل",
+            description: serverMsg || undefined,
+            variant: "destructive",
+          });
+        },
       }
     );
   };

@@ -110,68 +110,87 @@ router.get("/payments/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/payments/:id", async (req, res): Promise<void> => {
-  const params = UpdatePaymentParams.safeParse(req.params);
-  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+  try {
+    const params = UpdatePaymentParams.safeParse(req.params);
+    if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
 
-  const parsed = UpdatePaymentBody.safeParse(req.body);
-  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+    const parsed = UpdatePaymentBody.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
-  const [existing] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, params.data.id));
-  if (!existing) { res.status(404).json({ error: "Payment not found" }); return; }
+    const [existing] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, params.data.id));
+    if (!existing) { res.status(404).json({ error: "Payment not found" }); return; }
 
-  const oldAmount = Number(existing.amount);
-  const newAmount = parsed.data.amount ?? oldAmount;
-  const newBookingId = parsed.data.bookingId ?? existing.bookingId;
-  const bookingChanged = newBookingId !== existing.bookingId;
+    const oldAmount = Number(existing.amount);
+    const newAmount = parsed.data.amount ?? oldAmount;
+    const newBookingId = parsed.data.bookingId ?? existing.bookingId;
+    const bookingChanged = newBookingId !== existing.bookingId;
 
-  // Validate new booking exists if changed
-  if (bookingChanged) {
-    const [newBooking] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, newBookingId));
-    if (!newBooking) { res.status(404).json({ error: "Booking not found" }); return; }
+    // Validate new booking exists if changed
+    if (bookingChanged) {
+      const [newBooking] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, newBookingId));
+      if (!newBooking) { res.status(404).json({ error: "الحجز المحدد غير موجود" }); return; }
+    }
+
+    // Build typed update object for payments table
+    const paymentSet: Partial<typeof paymentsTable.$inferInsert> = {};
+    if (parsed.data.amount !== undefined) paymentSet.amount = String(parsed.data.amount);
+    if (parsed.data.paymentDate !== undefined) paymentSet.paymentDate = parsed.data.paymentDate;
+    if (parsed.data.method !== undefined) paymentSet.method = parsed.data.method;
+    if (parsed.data.clientNameOverride !== undefined) paymentSet.clientNameOverride = parsed.data.clientNameOverride ?? null;
+    if (parsed.data.notes !== undefined) paymentSet.notes = parsed.data.notes ?? null;
+    if (parsed.data.bookingId !== undefined) paymentSet.bookingId = parsed.data.bookingId;
+
+    if (Object.keys(paymentSet).length === 0) {
+      // Nothing to update — return current state
+      const [current] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, params.data.id));
+      const enriched = await enrichPayment(current);
+      res.json(GetPaymentResponse.parse(enriched));
+      return;
+    }
+
+    const [payment] = await db.update(paymentsTable)
+      .set(paymentSet)
+      .where(eq(paymentsTable.id, params.data.id))
+      .returning();
+
+    if (!payment) { res.status(404).json({ error: "Payment not found after update" }); return; }
+
+    if (bookingChanged) {
+      // Remove old amount from old booking
+      await db.update(bookingsTable)
+        .set({ paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} - ${String(oldAmount)})` })
+        .where(eq(bookingsTable.id, existing.bookingId));
+      // Add new amount to new booking
+      await db.update(bookingsTable)
+        .set({ paidAmount: sql`${bookingsTable.paidAmount} + ${String(newAmount)}` })
+        .where(eq(bookingsTable.id, newBookingId));
+    } else if (newAmount !== oldAmount) {
+      const diff = newAmount - oldAmount;
+      await db.update(bookingsTable)
+        .set({ paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} + ${String(diff)})` })
+        .where(eq(bookingsTable.id, existing.bookingId));
+    }
+
+    // Update booking totalPrice / serviceCost if explicitly provided
+    const hasBookingPriceUpdate =
+      parsed.data.bookingTotalPrice !== undefined ||
+      parsed.data.bookingServiceCost !== undefined;
+
+    if (hasBookingPriceUpdate) {
+      const bookingSet: Partial<typeof bookingsTable.$inferInsert> = {};
+      if (parsed.data.bookingTotalPrice !== undefined)
+        bookingSet.totalPrice = String(parsed.data.bookingTotalPrice);
+      if (parsed.data.bookingServiceCost !== undefined)
+        bookingSet.serviceCost = String(parsed.data.bookingServiceCost);
+      await db.update(bookingsTable).set(bookingSet).where(eq(bookingsTable.id, newBookingId));
+    }
+
+    const enriched = await enrichPayment(payment);
+    res.json(GetPaymentResponse.parse(enriched));
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ error: `خطأ في الخادم: ${message}` });
   }
-
-  const updateData: Record<string, unknown> = {};
-  if (parsed.data.amount !== undefined) updateData.amount = String(parsed.data.amount);
-  if (parsed.data.paymentDate !== undefined) updateData.paymentDate = parsed.data.paymentDate;
-  if (parsed.data.method !== undefined) updateData.method = parsed.data.method;
-  if (parsed.data.clientNameOverride !== undefined) updateData.clientNameOverride = parsed.data.clientNameOverride;
-  if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
-  if (parsed.data.bookingId !== undefined) updateData.bookingId = parsed.data.bookingId;
-
-  const [payment] = await db.update(paymentsTable)
-    .set(updateData)
-    .where(eq(paymentsTable.id, params.data.id))
-    .returning();
-
-  if (bookingChanged) {
-    // Remove old amount from old booking
-    await db.update(bookingsTable)
-      .set({ paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} - ${String(oldAmount)})`, updatedAt: new Date() })
-      .where(eq(bookingsTable.id, existing.bookingId));
-    // Add new amount to new booking
-    await db.update(bookingsTable)
-      .set({ paidAmount: sql`${bookingsTable.paidAmount} + ${String(newAmount)}`, updatedAt: new Date() })
-      .where(eq(bookingsTable.id, newBookingId));
-  } else if (newAmount !== oldAmount) {
-    const diff = newAmount - oldAmount;
-    await db.update(bookingsTable)
-      .set({
-        paidAmount: sql`GREATEST(0, ${bookingsTable.paidAmount} + ${String(diff)})`,
-        updatedAt: new Date(),
-      })
-      .where(eq(bookingsTable.id, existing.bookingId));
-  }
-
-  // Update booking totalPrice / serviceCost if provided
-  const bookingUpdate: Record<string, unknown> = { updatedAt: new Date() };
-  if (parsed.data.bookingTotalPrice !== undefined) bookingUpdate.totalPrice = String(parsed.data.bookingTotalPrice);
-  if (parsed.data.bookingServiceCost !== undefined) bookingUpdate.serviceCost = String(parsed.data.bookingServiceCost);
-  if (Object.keys(bookingUpdate).length > 1) {
-    await db.update(bookingsTable).set(bookingUpdate).where(eq(bookingsTable.id, newBookingId));
-  }
-
-  const enriched = await enrichPayment(payment);
-  res.json(GetPaymentResponse.parse(enriched));
 });
 
 router.delete("/payments/:id", async (req, res): Promise<void> => {
