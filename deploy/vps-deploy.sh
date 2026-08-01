@@ -1,52 +1,74 @@
-#!/usr/bin/env bash
-# سكريبت النشر على VPS — يُشغَّل مباشرة من داخل الخادم
-# الاستخدام: bash /root/gestionaire-agence-de-voyage/gestionaire-agence-de-voyage/deploy/vps-deploy.sh
+#!/bin/bash
+# ============================================================
+#  CHOUIAAR Travel Agency — VPS Deploy Script
+#  الاستخدام: bash deploy/vps-deploy.sh
+# ============================================================
+set -e
 
-set -euo pipefail
-
-# ═══ إعدادات ═══════════════════════════════════════════════════
-REPO_DIR="/root/gestionaire-agence-de-voyage/gestionaire-agence-de-voyage"
-FRONTEND_OUT="$REPO_DIR/artifacts/travel-agency/dist/public"
-FRONTEND_SERVE="/var/www/travel/artifacts/travel-agency/dist/public"
-API_OUT="$REPO_DIR/artifacts/api-server/dist"
-API_SERVE="/var/www/travel/api/dist"
-ECOSYSTEM="$REPO_DIR/deploy/ecosystem-vps.config.cjs"
+APP_DIR="/var/www/travel"
 PM2_APP="travel-api"
-# ════════════════════════════════════════════════════════════════
 
-cd "$REPO_DIR"
+echo "══════════════════════════════════════════"
+echo "  🚀  نشر تطبيق CHOUIAAR على السيرفر"
+echo "══════════════════════════════════════════"
 
-echo "━━━ 1/6 سحب آخر التحديثات من GitHub ━━━"
-git fetch origin
-git reset --hard origin/main
-
-echo "━━━ 2/6 تثبيت الاعتماديات ━━━"
+# ── 1. تثبيت الحزم ──────────────────────────────────────────
+echo ""
+echo "📦  تثبيت الحزم..."
 pnpm install --frozen-lockfile
 
-echo "━━━ 3/6 بناء الـ Frontend ━━━"
-PORT=3000 BASE_PATH=/ pnpm --filter @workspace/travel-agency run build
-
-echo "━━━ 4/6 بناء الـ API ━━━"
+# ── 2. بناء الـ Backend ──────────────────────────────────────
+echo ""
+echo "🔧  بناء الـ Backend..."
 pnpm --filter @workspace/api-server run build
 
-echo "━━━ 5/6 نسخ الملفات ━━━"
-mkdir -p "$FRONTEND_SERVE"
-rsync -a --delete "$FRONTEND_OUT/" "$FRONTEND_SERVE/"
+# ── 3. بناء الـ Frontend ─────────────────────────────────────
+echo ""
+echo "🎨  بناء الـ Frontend..."
+pnpm --filter @workspace/travel-agency run build
 
-mkdir -p "$API_SERVE"
-rsync -a --delete "$API_OUT/" "$API_SERVE/"
-
-# نسخ ملف PM2
-cp "$ECOSYSTEM" /var/www/travel/ecosystem.config.cjs
-
-echo "━━━ 6/6 إعادة تشغيل API ━━━"
+# ── 4. إعادة تشغيل PM2 ──────────────────────────────────────
+echo ""
 if pm2 describe "$PM2_APP" > /dev/null 2>&1; then
-  pm2 reload /var/www/travel/ecosystem.config.cjs --update-env
+  echo "🔄  إعادة تشغيل PM2 ($PM2_APP)..."
+  pm2 restart "$PM2_APP"
 else
-  pm2 start /var/www/travel/ecosystem.config.cjs
+  echo "▶️   تشغيل PM2 لأول مرة..."
+
+  # تحقق من وجود ملف .env
+  if [ ! -f "$APP_DIR/artifacts/api-server/.env" ]; then
+    echo ""
+    echo "⚠️  تحذير: ملف .env غير موجود!"
+    echo "    أنشئه في: $APP_DIR/artifacts/api-server/.env"
+    echo "    المحتوى المطلوب:"
+    echo "      DATABASE_URL=postgresql://USER:PASS@localhost:5432/DB_NAME"
+    echo "      SESSION_SECRET=YOUR_SECRET_64_CHARS"
+    echo "      PORT=4000"
+    echo "      NODE_ENV=production"
+    echo ""
+    exit 1
+  fi
+
+  # تحميل متغيرات البيئة من .env
+  export $(grep -v '^#' "$APP_DIR/artifacts/api-server/.env" | xargs)
+
+  pm2 start "$APP_DIR/artifacts/api-server/dist/index.mjs" \
+    --name "$PM2_APP" \
+    --interpreter node \
+    --node-args "--enable-source-maps" \
+    --env production
   pm2 save
 fi
 
+# ── 5. إعادة تحميل Nginx ────────────────────────────────────
 echo ""
-echo "✅ تم النشر بنجاح!"
+if command -v nginx &> /dev/null; then
+  echo "🌐  إعادة تحميل Nginx..."
+  nginx -t && systemctl reload nginx
+fi
+
+echo ""
+echo "══════════════════════════════════════════"
+echo "  ✅  تم النشر بنجاح!"
+echo "══════════════════════════════════════════"
 pm2 status "$PM2_APP"
