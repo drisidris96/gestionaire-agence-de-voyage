@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Plus, MoreHorizontal, Pencil, Trash2, FileText, Filter, CheckCircle, XCircle, Hotel, Plane, Building2, Loader2, Download, Printer } from "lucide-react";
+import { Plus, MoreHorizontal, Pencil, Trash2, FileText, Filter, CheckCircle, XCircle, Hotel, Plane, Building2, Loader2, Download, Printer, Check, ChevronsUpDown } from "lucide-react";
 import { downloadCSV } from "@/lib/export-csv";
 import { InvoiceModal } from "@/components/InvoiceModal";
 import { z } from "zod";
@@ -25,6 +25,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { DateInput } from "@/components/ui/date-input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -74,6 +78,9 @@ export default function BookingsPage() {
   const [editingBooking, setEditingBooking] = useState<any>(null);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [invoiceBooking, setInvoiceBooking] = useState<any>(null);
+  const [clientOpen, setClientOpen] = useState(false);
+  const [clientSearch, setClientSearch] = useState("");
+  const [oneWay, setOneWay] = useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -93,11 +100,16 @@ export default function BookingsPage() {
   const closeForm = () => {
     setIsFormOpen(false);
     setEditingBooking(null);
+    setClientOpen(false);
+    setClientSearch("");
+    setOneWay(false);
     form.reset();
   };
 
   const openEdit = (booking: any) => {
     setEditingBooking(booking);
+    const hasReturn = !!booking.returnDate;
+    setOneWay(!hasReturn);
     form.reset({
       clientId: booking.clientId,
       packageId: booking.packageId ?? null,
@@ -303,10 +315,49 @@ export default function BookingsPage() {
                 <FormField control={form.control} name="clientId" render={({ field }) => (
                   <FormItem>
                     <FormLabel>العميل *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value ? field.value.toString() : undefined}>
-                      <FormControl><SelectTrigger data-testid="select-client"><SelectValue placeholder="اختر العميل" /></SelectTrigger></FormControl>
-                      <SelectContent>{clients?.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.fullName}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <Popover open={clientOpen} onOpenChange={setClientOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button variant="outline" role="combobox" className="w-full justify-between font-normal text-right" data-testid="select-client">
+                            <span className="truncate">
+                              {field.value ? (clients?.find(c => c.id === Number(field.value))?.fullName ?? "اختر العميل...") : "اختر العميل..."}
+                            </span>
+                            <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0 mr-2" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
+                        <Command>
+                          <CommandInput
+                            placeholder="بحث بالاسم أو الهاتف..."
+                            value={clientSearch}
+                            onValueChange={setClientSearch}
+                          />
+                          <CommandList className="max-h-52">
+                            <CommandEmpty>لا يوجد عميل بهذا الاسم</CommandEmpty>
+                            <CommandGroup>
+                              {clients
+                                ?.filter(c =>
+                                  !clientSearch ||
+                                  c.fullName.toLowerCase().includes(clientSearch.toLowerCase()) ||
+                                  (c.phone && c.phone.includes(clientSearch))
+                                )
+                                .map(c => (
+                                  <CommandItem
+                                    key={c.id}
+                                    value={c.fullName}
+                                    onSelect={() => { field.onChange(c.id); setClientOpen(false); setClientSearch(""); }}
+                                  >
+                                    <Check className={`ml-2 h-4 w-4 shrink-0 ${Number(field.value) === c.id ? "opacity-100" : "opacity-0"}`} />
+                                    <span className="flex-1">{c.fullName}</span>
+                                    {c.phone && <span className="text-xs text-muted-foreground">{c.phone}</span>}
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -369,18 +420,39 @@ export default function BookingsPage() {
                 <FormField control={form.control} name="travelDate" render={({ field }) => (
                   <FormItem>
                     <FormLabel>تاريخ السفر</FormLabel>
-                    <FormControl><Input type="date" {...field} value={field.value || ""} data-testid="input-travel-date" /></FormControl>
+                    <FormControl>
+                      <DateInput value={field.value || ""} onChange={field.onChange} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                <FormField control={form.control} name="returnDate" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>تاريخ العودة</FormLabel>
-                    <FormControl><Input type="date" {...field} value={field.value || ""} data-testid="input-return-date" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                {/* One-way toggle */}
+                <div className="flex items-center gap-2 self-end pb-2">
+                  <Checkbox
+                    id="oneWay"
+                    checked={oneWay}
+                    onCheckedChange={(checked) => {
+                      setOneWay(!!checked);
+                      if (checked) form.setValue("returnDate", "");
+                    }}
+                  />
+                  <label htmlFor="oneWay" className="text-sm font-medium cursor-pointer select-none">
+                    ذهاب فقط
+                  </label>
+                </div>
+
+                {!oneWay && (
+                  <FormField control={form.control} name="returnDate" render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>تاريخ العودة</FormLabel>
+                      <FormControl>
+                        <DateInput value={field.value || ""} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
 
                 <FormField control={form.control} name="numberOfPersons" render={({ field }) => (
                   <FormItem>

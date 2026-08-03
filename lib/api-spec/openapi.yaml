@@ -1344,14 +1344,14 @@ components:
     # ─── Client ─────────────────────────────────────────────────────────────
     Client:
       type: object
-      required: [id, fullName, phone, createdAt]
+      required: [id, fullName, createdAt]
       properties:
         id:
           type: integer
         fullName:
           type: string
         phone:
-          type: string
+          type: ["string", "null"]
         email:
           type: ["string", "null"]
         address:
@@ -1371,12 +1371,12 @@ components:
 
     CreateClientBody:
       type: object
-      required: [fullName, phone]
+      required: [fullName]
       properties:
         fullName:
           type: string
         phone:
-          type: string
+          type: ["string", "null"]
         email:
           type: ["string", "null"]
         address:

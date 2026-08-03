@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const clientSchema = z.object({
   fullName: z.string().min(2, "الاسم مطلوب"),
-  phone: z.string().min(5, "رقم الهاتف مطلوب"),
+  phone: z.string().optional(),
   email: z.string().optional(),
   address: z.string().optional(),
   passportNumber: z.string().optional(),
@@ -178,7 +178,7 @@ export default function ClientsPage() {
                     )} />
                     <FormField control={form.control} name="phone" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>رقم الهاتف *</FormLabel>
+                        <FormLabel>رقم الهاتف</FormLabel>
                         <FormControl><Input {...field} data-testid="input-phone" /></FormControl>
                         <FormMessage />
                       </FormItem>

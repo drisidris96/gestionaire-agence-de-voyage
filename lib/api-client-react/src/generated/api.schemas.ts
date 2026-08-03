@@ -12,7 +12,8 @@ export interface HealthStatus {
 export interface Client {
   id: number;
   fullName: string;
-  phone: string;
+  /** @nullable */
+  phone?: string | null;
   /** @nullable */
   email?: string | null;
   /** @nullable */
@@ -29,7 +30,8 @@ export interface Client {
 
 export interface CreateClientBody {
   fullName: string;
-  phone: string;
+  /** @nullable */
+  phone?: string | null;
   /** @nullable */
   email?: string | null;
   /** @nullable */

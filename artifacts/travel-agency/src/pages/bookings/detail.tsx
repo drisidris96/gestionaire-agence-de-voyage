@@ -27,7 +27,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Link } from "wouter";
-import { Calendar, User, CreditCard, Plane, FileText, CheckCircle2, ArrowRight, Pencil, XCircle, Hotel, Building2, Loader2 } from "lucide-react";
+import { Calendar, User, CreditCard, Plane, FileText, CheckCircle2, ArrowRight, Pencil, XCircle, Hotel, Building2, Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { DateInput } from "@/components/ui/date-input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { statusAr, methodAr } from "@/lib/i18n";
 
 const BOOKING_TYPE_AR: Record<string, { label: string; icon: any }> = {
@@ -70,6 +74,9 @@ export default function BookingDetail() {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
+  const [clientOpen, setClientOpen] = useState(false);
+  const [clientSearch, setClientSearch] = useState("");
+  const [oneWay, setOneWay] = useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -101,6 +108,9 @@ export default function BookingDetail() {
 
   const openEdit = () => {
     if (!booking) return;
+    const hasReturn = !!booking.returnDate;
+    setOneWay(!hasReturn);
+    setClientSearch("");
     editForm.reset({
       clientId: booking.clientId,
       packageId: booking.packageId ?? undefined,
@@ -356,18 +366,39 @@ export default function BookingDetail() {
                 <FormField control={editForm.control} name="travelDate" render={({ field }) => (
                   <FormItem>
                     <FormLabel>تاريخ السفر</FormLabel>
-                    <FormControl><Input type="date" {...field} value={field.value || ""} /></FormControl>
+                    <FormControl>
+                      <DateInput value={field.value || ""} onChange={field.onChange} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                <FormField control={editForm.control} name="returnDate" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>تاريخ العودة</FormLabel>
-                    <FormControl><Input type="date" {...field} value={field.value || ""} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                {/* One-way toggle */}
+                <div className="flex items-center gap-2 self-end pb-2">
+                  <Checkbox
+                    id="editOneWay"
+                    checked={oneWay}
+                    onCheckedChange={(checked) => {
+                      setOneWay(!!checked);
+                      if (checked) editForm.setValue("returnDate", "");
+                    }}
+                  />
+                  <label htmlFor="editOneWay" className="text-sm font-medium cursor-pointer select-none">
+                    ذهاب فقط
+                  </label>
+                </div>
+
+                {!oneWay && (
+                  <FormField control={editForm.control} name="returnDate" render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>تاريخ العودة</FormLabel>
+                      <FormControl>
+                        <DateInput value={field.value || ""} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
 
                 <FormField control={editForm.control} name="numberOfPersons" render={({ field }) => (
                   <FormItem>

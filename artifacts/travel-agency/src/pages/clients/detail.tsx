@@ -38,8 +38,8 @@ const STATUS_VARIANT: Record<string, string> = {
 
 const clientSchema = z.object({
   fullName: z.string().min(2, "الاسم مطلوب"),
-  phone: z.string().min(5, "رقم الهاتف مطلوب"),
-  email: z.string().email("البريد الإلكتروني غير صحيح").or(z.literal("")),
+  phone: z.string().optional(),
+  email: z.string().email("البريد الإلكتروني غير صحيح").or(z.literal("")).optional(),
   address: z.string().optional(),
   passportNumber: z.string().optional(),
   nationality: z.string().optional(),
@@ -79,7 +79,7 @@ export default function ClientDetail() {
     if (!client) return;
     form.reset({
       fullName: client.fullName,
-      phone: client.phone,
+      phone: client.phone ?? "",
       email: client.email || "",
       address: client.address || "",
       passportNumber: client.passportNumber || "",
