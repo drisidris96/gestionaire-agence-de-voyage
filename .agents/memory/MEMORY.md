@@ -1,0 +1,1 @@
+- [VPS Auto-Deploy Setup](vps-deploy.md) — SSH key at /home/runner/.ssh/deploy_key; run `bash deploy/auto-deploy.sh` to push to buydriss.co.uk
