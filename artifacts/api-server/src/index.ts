@@ -8,6 +8,7 @@ async function runMigrations() {
   try {
     await db.execute(sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS client_name_override text`);
     await db.execute(sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS service_cost numeric(10,2) NOT NULL DEFAULT 0`);
+    await db.execute(sql`ALTER TABLE clients ADD COLUMN IF NOT EXISTS return_date text`);
     await db.execute(sql`CREATE TABLE IF NOT EXISTS agency_settings (key text PRIMARY KEY, value text, updated_at timestamptz NOT NULL DEFAULT now())`);
     logger.info("Database migrations applied successfully");
   } catch (err) {

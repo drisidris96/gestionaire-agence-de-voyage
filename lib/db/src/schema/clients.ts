@@ -11,6 +11,7 @@ export const clientsTable = pgTable("clients", {
   passportNumber: text("passport_number"),
   nationality: text("nationality"),
   notes: text("notes"),
+  returnDate: text("return_date"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

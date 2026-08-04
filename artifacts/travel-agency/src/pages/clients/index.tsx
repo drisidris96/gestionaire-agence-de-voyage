@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useListClients, useCreateClient, useUpdateClient, useDeleteClient, getListClientsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +31,7 @@ const clientSchema = z.object({
   address: z.string().optional(),
   passportNumber: z.string().optional(),
   nationality: z.string().optional(),
+  returnDate: z.string().optional(),
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -41,6 +43,7 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<any>(null);
   const [deletingClient, setDeletingClient] = useState<any>(null);
   const [addedClientName, setAddedClientName] = useState<string | null>(null);
+  const [noReturnDate, setNoReturnDate] = useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -57,6 +60,7 @@ export default function ClientsPage() {
       address: "",
       passportNumber: "",
       nationality: "",
+      returnDate: "",
     }
   });
 
@@ -64,6 +68,7 @@ export default function ClientsPage() {
     const payload = {
       ...data,
       email: data.email && data.email.trim() !== "" ? data.email : null,
+      returnDate: noReturnDate ? null : (data.returnDate || null),
     };
     if (editingClient) {
       updateClient.mutate({ id: editingClient.id, data: payload as any }, {
@@ -109,13 +114,15 @@ export default function ClientsPage() {
 
   const openEdit = (client: any) => {
     setEditingClient(client);
+    setNoReturnDate(!client.returnDate);
     form.reset({
       fullName: client.fullName,
-      phone: client.phone,
+      phone: client.phone || "",
       email: client.email || "",
       address: client.address || "",
       passportNumber: client.passportNumber || "",
       nationality: client.nationality || "",
+      returnDate: client.returnDate || "",
     });
     setIsAddOpen(true);
   };
@@ -211,6 +218,33 @@ export default function ClientsPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
+
+                    {/* تاريخ العودة */}
+                    <div className="col-span-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel>تاريخ العودة</FormLabel>
+                        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+                          <Checkbox
+                            checked={noReturnDate}
+                            onCheckedChange={(v) => {
+                              setNoReturnDate(!!v);
+                              if (v) form.setValue("returnDate", "");
+                            }}
+                          />
+                          بدون تاريخ عودة
+                        </label>
+                      </div>
+                      {!noReturnDate && (
+                        <FormField control={form.control} name="returnDate" render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input type="date" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      )}
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => { setIsAddOpen(false); setEditingClient(null); form.reset(); }}>

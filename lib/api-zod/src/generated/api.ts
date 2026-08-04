@@ -31,6 +31,7 @@ export const ListClientsResponseItem = zod.object({
   passportNumber: zod.string().nullish(),
   nationality: zod.string().nullish(),
   notes: zod.string().nullish(),
+  returnDate: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date().optional(),
 });
@@ -47,6 +48,7 @@ export const CreateClientBody = zod.object({
   passportNumber: zod.string().nullish(),
   nationality: zod.string().nullish(),
   notes: zod.string().nullish(),
+  returnDate: zod.string().nullish(),
 });
 
 /**
@@ -65,6 +67,7 @@ export const GetClientResponse = zod.object({
   passportNumber: zod.string().nullish(),
   nationality: zod.string().nullish(),
   notes: zod.string().nullish(),
+  returnDate: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date().optional(),
 });
@@ -84,6 +87,7 @@ export const UpdateClientBody = zod.object({
   passportNumber: zod.string().nullish(),
   nationality: zod.string().nullish(),
   notes: zod.string().nullish(),
+  returnDate: zod.string().nullish(),
 });
 
 export const UpdateClientResponse = zod.object({
@@ -95,6 +99,7 @@ export const UpdateClientResponse = zod.object({
   passportNumber: zod.string().nullish(),
   nationality: zod.string().nullish(),
   notes: zod.string().nullish(),
+  returnDate: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date().optional(),
 });
