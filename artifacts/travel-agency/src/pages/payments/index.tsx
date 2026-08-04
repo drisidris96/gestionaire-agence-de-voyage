@@ -36,6 +36,7 @@ const editSchema = z.object({
   bookingId:           z.coerce.number().int().min(1, "رقم الحجز مطلوب"),
   bookingTotalPrice:   z.coerce.number().min(0, "المبلغ الإجمالي يجب أن يكون موجباً").optional(),
   bookingServiceCost:  z.coerce.number().min(0, "سعر الخدمة يجب أن يكون موجباً").optional(),
+  bookingPaidAmount:   z.coerce.number().min(0, "المبلغ المدفوع يجب أن يكون موجباً").optional(),
   amount:              z.coerce.number().min(0.01, "المبلغ يجب أن يكون موجباً"),
   paymentDate:         z.string().min(1, "التاريخ مطلوب"),
   method:              z.enum(["cash", "card", "bank_transfer", "cheque"]),
@@ -59,8 +60,12 @@ export default function PaymentsPage() {
 
   const form = useForm<EditForm>({
     resolver: zodResolver(editSchema),
-    defaultValues: { bookingId: 0, bookingTotalPrice: 0, bookingServiceCost: 0, amount: 0, paymentDate: "", method: "cash", clientNameOverride: "", notes: "" },
+    defaultValues: { bookingId: 0, bookingTotalPrice: 0, bookingServiceCost: 0, bookingPaidAmount: 0, amount: 0, paymentDate: "", method: "cash", clientNameOverride: "", notes: "" },
   });
+
+  const watchedTotalPrice = form.watch("bookingTotalPrice") ?? 0;
+  const watchedPaidAmount = form.watch("bookingPaidAmount") ?? 0;
+  const computedRemaining = Math.max(0, Number(watchedTotalPrice) - Number(watchedPaidAmount));
 
   const openEdit = (payment: any) => {
     setEditTarget(payment);
@@ -68,6 +73,7 @@ export default function PaymentsPage() {
       bookingId:          payment.bookingId,
       bookingTotalPrice:  payment.totalPrice ?? 0,
       bookingServiceCost: 0,
+      bookingPaidAmount:  payment.paidAmount ?? 0,
       amount:             payment.amount,
       paymentDate:        payment.paymentDate?.split("T")[0] ?? "",
       method:             payment.method,
@@ -326,6 +332,26 @@ export default function PaymentsPage() {
                   <FormMessage />
                 </FormItem>
               )} />
+
+              <FormField control={form.control} name="bookingPaidAmount" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>إجمالي المدفوع للحجز ($)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" min="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* المبلغ المتبقي — محسوب تلقائياً */}
+              <div className="space-y-1">
+                <p className="text-sm font-medium">المبلغ المتبقي ($)</p>
+                <div className={`flex items-center h-9 w-full rounded-md border px-3 text-sm font-semibold
+                  ${computedRemaining > 0 ? "border-amber-300 bg-amber-50 text-amber-700" : "border-green-300 bg-green-50 text-green-700"}`}>
+                  {computedRemaining.toLocaleString()} $
+                  {computedRemaining === 0 && <span className="mr-2 text-xs">✓ مكتمل</span>}
+                </div>
+              </div>
 
               <FormField control={form.control} name="clientNameOverride" render={({ field }) => (
                 <FormItem>
